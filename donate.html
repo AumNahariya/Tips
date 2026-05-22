@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Support the Channel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+  :root {
+    --red: #FF2D2D;
+    --red-glow: rgba(255,45,45,0.35);
+    --gold: #FFD700;
+    --bg: #0a0a0f;
+    --surface: rgba(255,255,255,0.04);
+    --surface-hover: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.09);
+    --border-hover: rgba(255,45,45,0.4);
+    --text: #f0f0f0;
+    --muted: rgba(255,255,255,0.45);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Canvas bg ── */
+  #bgCanvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── Noise overlay ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; opacity: 0.5;
+  }
+
+  .page-wrap {
+    position: relative; z-index: 2;
+    width: 100%; max-width: 520px;
+    padding: 2rem 1.25rem 4rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+  }
+
+  /* ── Hero banner ── */
+  .hero {
+    width: 100%; text-align: center; padding: 2.5rem 1rem 2rem;
+    position: relative;
+  }
+  .hero-ring {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--red), #ff6b6b);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem;
+    position: relative;
+    box-shadow: 0 0 0 0 var(--red-glow);
+    animation: pulse-ring 2.5s ease-in-out infinite;
+  }
+  .hero-ring::before {
+    content: '';
+    position: absolute; inset: -4px;
+    border-radius: 50%;
+    background: conic-gradient(var(--red), transparent 60%, var(--red));
+    animation: spin 4s linear infinite;
+    z-index: -1; opacity: 0.6;
+  }
+  .hero-ring svg { width: 44px; height: 44px; fill: white; }
+  @keyframes pulse-ring {
+    0%,100% { box-shadow: 0 0 0 0 var(--red-glow), 0 0 40px var(--red-glow); }
+    50% { box-shadow: 0 0 0 18px transparent, 0 0 60px var(--red-glow); }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .channel-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 8vw, 3rem);
+    letter-spacing: 0.04em;
+    background: linear-gradient(135deg, #fff 30%, var(--red));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1; margin-bottom: 0.4rem;
+  }
+  .channel-sub {
+    font-size: 14px; color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+  .sub-count {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,45,45,0.12); border: 1px solid rgba(255,45,45,0.25);
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 12px; color: var(--red); font-weight: 500;
+    margin-top: 0.75rem;
+  }
+  .sub-count::before { content: '●'; font-size: 8px; animation: blink 1.5s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── Card ── */
+  .card {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1.75rem;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: relative; overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,45,45,0.6), transparent);
+  }
+  .card:focus-within { border-color: var(--border-hover); }
+
+  /* ── Fields ── */
+  .field { margin-bottom: 1.25rem; }
+  .field label {
+    display: block; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  .input-wrap { position: relative; }
+  .input-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-size: 16px; pointer-events: none;
+    transition: color 0.2s;
+  }
+  .field input, .field textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    padding: 13px 14px 13px 42px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+  .field textarea { padding: 13px 14px; min-height: 80px; resize: none; line-height: 1.5; }
+  .field input:focus, .field textarea:focus {
+    border-color: var(--red);
+    background: rgba(255,45,45,0.06);
+    box-shadow: 0 0 0 3px rgba(255,45,45,0.12);
+  }
+  .field input:focus + .input-icon,
+  .input-wrap:focus-within .input-icon { color: var(--red); }
+  .field input::placeholder, .field textarea::placeholder { color: rgba(255,255,255,0.2); }
+
+  /* ── Amount presets ── */
+  .amounts-grid {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .amt-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 0;
+    text-align: center;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500;
+    color: var(--muted);
+    transition: all 0.18s;
+    position: relative; overflow: hidden;
+  }
+  .amt-chip::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at center, rgba(255,45,45,0.3) 0%, transparent 70%);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .amt-chip:hover { border-color: rgba(255,45,45,0.4); color: #fff; }
+  .amt-chip:hover::after { opacity: 1; }
+  .amt-chip.active {
+    border-color: var(--red);
+    background: rgba(255,45,45,0.15);
+    color: #fff;
+    box-shadow: 0 0 16px rgba(255,45,45,0.25);
+  }
+  .amt-chip.active::after { opacity: 1; }
+  .amt-chip .emoji { display: block; font-size: 16px; margin-bottom: 2px; }
+  .amt-chip .label { font-size: 13px; }
+
+  .custom-amt-wrap { position: relative; }
+  .custom-amt-wrap .rupee {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 18px; color: var(--muted); font-weight: 600; pointer-events: none;
+    transition: color 0.2s;
+  }
+  #customAmt {
+    width: 100%; background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border); border-radius: 12px;
+    color: var(--text); font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; letter-spacing: 0.05em;
+    padding: 10px 14px 10px 34px;
+    outline: none; transition: all 0.2s;
+  }
+  #customAmt:focus {
+    border-color: var(--red);
+    background: rgba(255,45,45,0.06);
+    box-shadow: 0 0 0 3px rgba(255,45,45,0.12);
+  }
+  #customAmt:focus ~ .rupee { color: var(--red); }
+
+  /* ── Donate button ── */
+  .donate-btn {
+    width: 100%; padding: 16px;
+    background: var(--red);
+    border: none; border-radius: 14px;
+    color: #fff; font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 0.08em;
+    cursor: pointer;
+    position: relative; overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 4px 30px rgba(255,45,45,0.4);
+    margin-top: 0.25rem;
+  }
+  .donate-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .donate-btn .shimmer {
+    position: absolute; top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    animation: shimmer 2.5s ease-in-out infinite;
+  }
+  @keyframes shimmer { to { left: 160%; } }
+  .donate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(255,45,45,0.55); }
+  .donate-btn:active { transform: translateY(0) scale(0.98); }
+  .donate-btn .btn-inner { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+  /* ── Security note ── */
+  .secure-note {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    margin-top: 1rem; font-size: 12px; color: var(--muted);
+  }
+  .secure-note svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+  /* ── Recent donations ── */
+  .recent-section { width: 100%; margin-top: 1.5rem; }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; letter-spacing: 0.08em;
+    color: var(--muted); margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+  .donation-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; border-radius: 12px;
+    background: var(--surface); border: 1px solid var(--border);
+    margin-bottom: 8px;
+    animation: fadeUp 0.4s ease both;
+  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .d-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--red), #ff6b6b);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600; color: #fff; flex-shrink: 0;
+  }
+  .d-info { flex: 1; min-width: 0; }
+  .d-name { font-size: 14px; font-weight: 500; }
+  .d-msg { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .d-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; color: var(--gold);
+    letter-spacing: 0.04em; white-space: nowrap;
+  }
+
+  /* ── Success overlay ── */
+  #successOverlay {
+    display: none; position: fixed; inset: 0; z-index: 100;
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(12px);
+    align-items: center; justify-content: center;
+    flex-direction: column; text-align: center; gap: 1rem;
+  }
+  #successOverlay.show { display: flex; }
+  .success-icon {
+    width: 90px; height: 90px; border-radius: 50%;
+    background: linear-gradient(135deg, #00c853, #00e676);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 42px;
+    animation: pop 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 0 50px rgba(0,200,83,0.4);
+  }
+  @keyframes pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .success-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 0.05em; }
+  .success-sub { color: var(--muted); font-size: 15px; }
+  .success-close {
+    margin-top: 0.5rem; padding: 10px 28px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 15px; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .success-close:hover { background: var(--surface-hover); }
+
+  /* ── Confetti ── */
+  .confetti-piece {
+    position: fixed; top: -10px; border-radius: 2px;
+    animation: confettiFall linear forwards;
+    z-index: 101; pointer-events: none;
+  }
+  @keyframes confettiFall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<div class="page-wrap">
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-ring">
+      <svg viewBox="0 0 24 24"><path d="M23 7s-.27-1.93-1.08-2.78c-1.03-1.1-2.19-1.1-2.72-1.16C16.36 3 12 3 12 3s-4.36 0-7.2.06c-.53.06-1.69.06-2.72 1.16C1.27 5.07 1 7 1 7S.73 9.09.73 11.18v1.96C.73 15.23 1 17.32 1 17.32s.27 1.93 1.08 2.78c1.03 1.1 2.42 1.06 3.03 1.18C7.27 21.46 12 21.5 12 21.5s4.36 0 7.2-.22c.53-.06 1.69-.06 2.72-1.16.81-.85 1.08-2.78 1.08-2.78S23.27 15.23 23.27 13.14v-1.96C23.27 9.09 23 7 23 7zM9.73 15.5v-7l6.54 3.5-6.54 3.5z"/></svg>
+    </div>
+    <div class="channel-name" id="channelName">YOUR CHANNEL</div>
+    <div class="channel-sub">Support my content — every donation helps!</div>
+    <div class="sub-count">LIVE · 1.2K watching</div>
+  </div>
+
+  <!-- Donation form -->
+  <div class="card">
+    <div class="field">
+      <label>Your name</label>
+      <div class="input-wrap">
+        <input type="text" id="donorName" placeholder="e.g. Rahul Sharma" autocomplete="name"/>
+        <span class="input-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Choose amount</label>
+      <div class="amounts-grid">
+        <button class="amt-chip" data-val="49" onclick="selectAmt(this)">
+          <span class="emoji">☕</span><span class="label">₹49</span>
+        </button>
+        <button class="amt-chip active" data-val="99" onclick="selectAmt(this)">
+          <span class="emoji">🍕</span><span class="label">₹99</span>
+        </button>
+        <button class="amt-chip" data-val="199" onclick="selectAmt(this)">
+          <span class="emoji">🎮</span><span class="label">₹199</span>
+        </button>
+        <button class="amt-chip" data-val="499" onclick="selectAmt(this)">
+          <span class="emoji">🔥</span><span class="label">₹499</span>
+        </button>
+      </div>
+      <div class="custom-amt-wrap">
+        <input type="number" id="customAmt" value="99" min="1" placeholder="99" oninput="onCustomInput()"/>
+        <span class="rupee">₹</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Message (shown on stream)</label>
+      <div class="input-wrap">
+        <textarea id="donorMsg" placeholder="Say something to the streamer... 🎉"></textarea>
+      </div>
+    </div>
+
+    <button class="donate-btn" onclick="startPayment()" id="donateBtn">
+      <span class="shimmer"></span>
+      <span class="btn-inner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+        DONATE ₹99 VIA UPI / CARD
+      </span>
+    </button>
+
+    <div class="secure-note">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      100% secure · Powered by Razorpay · UPI · Cards · Netbanking
+    </div>
+  </div>
+
+  <!-- Recent donations -->
+  <div class="recent-section">
+    <div class="section-title">Recent supporters</div>
+    <div id="recentList">
+      <div class="donation-item" style="animation-delay:0.1s">
+        <div class="d-avatar">RS</div>
+        <div class="d-info"><div class="d-name">Rahul S.</div><div class="d-msg">"Keep making content! 🔥"</div></div>
+        <div class="d-amount">₹199</div>
+      </div>
+      <div class="donation-item" style="animation-delay:0.2s">
+        <div class="d-avatar">PK</div>
+        <div class="d-info"><div class="d-name">Priya K.</div><div class="d-msg">"Love your videos!"</div></div>
+        <div class="d-amount">₹499</div>
+      </div>
+      <div class="donation-item" style="animation-delay:0.3s">
+        <div class="d-avatar">AM</div>
+        <div class="d-info"><div class="d-name">Arjun M.</div><div class="d-msg">"First donation here 🎉"</div></div>
+        <div class="d-amount">₹99</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success -->
+<div id="successOverlay">
+  <div class="success-icon">❤️</div>
+  <div class="success-title">THANK YOU!</div>
+  <div class="success-sub" id="successMsg">Your donation means the world to us.</div>
+  <button class="success-close" onclick="closeSuccess()">Back to page</button>
+</div>
+
+<script>
+/* ── CONFIG — replace these ── */
+const RAZORPAY_KEY = 'rzp_test_XXXXXXXXXXXXXX'; // your Razorpay key_id
+const CHANNEL_NAME = 'Aumii';
+const CHANNEL_LOGO = ''; // URL to your logo image
+const SERVER_URL = 'tips-production.up.railway.app'; // your backend URL
+/* ───────────────────────────── */
+
+document.getElementById('channelName').textContent = CHANNEL_NAME.toUpperCase();
+
+let selectedAmt = 99;
+
+function selectAmt(btn) {
+  document.querySelectorAll('.amt-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedAmt = parseInt(btn.dataset.val);
+  document.getElementById('customAmt').value = selectedAmt;
+  updateBtnLabel();
+}
+
+function onCustomInput() {
+  document.querySelectorAll('.amt-chip').forEach(b => b.classList.remove('active'));
+  selectedAmt = parseInt(document.getElementById('customAmt').value) || 0;
+  updateBtnLabel();
+}
+
+function updateBtnLabel() {
+  const btn = document.getElementById('donateBtn');
+  btn.querySelector('.btn-inner').innerHTML = `
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+    DONATE ₹${selectedAmt || '?'} VIA UPI / CARD`;
+}
+
+async function startPayment() {
+  const name = document.getElementById('donorName').value.trim() || 'Anonymous';
+  const msg = document.getElementById('donorMsg').value.trim();
+  const amt = selectedAmt || parseInt(document.getElementById('customAmt').value);
+  if (!amt || amt < 1) { alert('Please enter a valid amount'); return; }
+
+  /* Create order on your server */
+  let orderId = 'demo_order_' + Date.now(); // replace with real server call
+  try {
+    const res = await fetch(`${SERVER_URL}/create-order`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ amount: amt * 100, name, message: msg })
+    });
+    const data = await res.json();
+    orderId = data.id;
+  } catch(e) { console.warn('Server not connected, using demo mode'); }
+
+  const options = {
+    key: RAZORPAY_KEY,
+    amount: amt * 100,
+    currency: 'INR',
+    name: CHANNEL_NAME,
+    description: 'Stream Donation',
+    image: CHANNEL_LOGO,
+    order_id: orderId,
+    prefill: { name },
+    theme: { color: '#FF2D2D' },
+    handler: function(response) {
+      onPaymentSuccess(name, amt, msg, response.razorpay_payment_id);
+    }
+  };
+  const rzp = new Razorpay(options);
+  rzp.open();
+}
+
+function onPaymentSuccess(name, amt, msg, paymentId) {
+  /* Add to recent list */
+  const list = document.getElementById('recentList');
+  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  const item = document.createElement('div');
+  item.className = 'donation-item';
+  item.innerHTML = `
+    <div class="d-avatar">${initials}</div>
+    <div class="d-info"><div class="d-name">${name}</div><div class="d-msg">"${msg || 'Thanks!'}"</div></div>
+    <div class="d-amount">₹${amt}</div>`;
+  list.prepend(item);
+
+  /* Show success */
+  document.getElementById('successMsg').textContent = `₹${amt} donated successfully! Thank you, ${name}!`;
+  document.getElementById('successOverlay').classList.add('show');
+  launchConfetti();
+}
+
+function closeSuccess() {
+  document.getElementById('successOverlay').classList.remove('show');
+}
+
+/* ── Confetti ── */
+function launchConfetti() {
+  const colors = ['#FF2D2D','#FFD700','#00e676','#2979FF','#FF6D00','#fff'];
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `
+        left: ${Math.random()*100}vw;
+        width: ${6+Math.random()*8}px;
+        height: ${10+Math.random()*14}px;
+        background: ${colors[Math.floor(Math.random()*colors.length)]};
+        animation-duration: ${1.5+Math.random()*2}s;
+        animation-delay: ${Math.random()*0.8}s;
+        transform: rotate(${Math.random()*360}deg);
+      `;
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }, i * 20);
+  }
+}
+
+/* ── Particle bg ── */
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let W, H, particles;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+
+class Particle {
+  constructor() { this.reset(true); }
+  reset(init) {
+    this.x = Math.random() * W;
+    this.y = init ? Math.random() * H : H + 10;
+    this.r = 0.5 + Math.random() * 1.5;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = -(0.2 + Math.random() * 0.5);
+    this.alpha = 0.1 + Math.random() * 0.5;
+    this.color = Math.random() > 0.8 ? '#FF2D2D' : '#ffffff';
+  }
+  update() {
+    this.x += this.vx; this.y += this.vy;
+    if (this.y < -10) this.reset(false);
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+    ctx.fillStyle = this.color;
+    ctx.globalAlpha = this.alpha;
+    ctx.fill();
+  }
+}
+
+function initParticles() {
+  particles = Array.from({length: 120}, () => new Particle());
+}
+
+function animate() {
+  ctx.clearRect(0, 0, W, H);
+  /* Radial glow */
+  const grd = ctx.createRadialGradient(W/2, H*0.3, 0, W/2, H*0.3, W*0.5);
+  grd.addColorStop(0, 'rgba(255,45,45,0.08)');
+  grd.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, W, H);
+  particles.forEach(p => { p.update(); p.draw(); });
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animate);
+}
+
+window.addEventListener('resize', () => { resize(); initParticles(); });
+resize(); initParticles(); animate();
+</script>
+</body>
+</html>
