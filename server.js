@@ -10,6 +10,8 @@ const crypto     = require('crypto');
 const Razorpay   = require('razorpay');
 const { WebSocketServer } = require('ws');
 const http       = require('http');
+const path       = require('path');
+const fs         = require('fs');
 
 // ── CONFIG (set these as environment variables) ──────────────
 const PORT                 = process.env.PORT                  || 3000;
@@ -62,6 +64,15 @@ app.use(express.json());
 // Health check
 app.get('/', (req, res) => {
   res.json({ status: 'ok', clients: overlayClients.size });
+});
+
+// Serve obs-overlay.html via HTTPS so OBS can load it without file:// restrictions
+app.get('/overlay', (req, res) => {
+  const filePath = path.join(__dirname, 'obs-overlay.html');
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send('obs-overlay.html not found. Make sure it is in the same folder as server.js');
+  }
+  res.sendFile(filePath);
 });
 
 // Create Razorpay order (called by donation page before checkout)

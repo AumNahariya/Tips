@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Donation Alert Overlay</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* OBS needs transparent background */
+  html, body {
+    background: transparent !important;
+    width: 1920px; height: 1080px;
+    overflow: hidden; position: relative;
+  }
+
+  /* ── Alert container (top-center) ── */
+  #alertWrap {
+    position: absolute;
+    top: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 520px;
+    pointer-events: none;
+  }
+
+  .alert-card {
+    position: relative;
+    background: rgba(8, 8, 16, 0.92);
+    border: 1px solid rgba(255, 45, 45, 0.5);
+    border-radius: 18px;
+    padding: 18px 20px;
+    display: flex; align-items: center; gap: 16px;
+    backdrop-filter: blur(24px);
+    overflow: hidden;
+    transform: translateY(-60px) scale(0.88);
+    opacity: 0;
+    transition: none;
+  }
+
+  .alert-card.show {
+    animation: slideIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  .alert-card.hide {
+    animation: slideOut 0.4s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+  }
+
+  @keyframes slideIn {
+    0%   { transform: translateY(-60px) scale(0.88); opacity: 0; }
+    60%  { transform: translateY(10px)  scale(1.02); opacity: 1; }
+    100% { transform: translateY(0)     scale(1);    opacity: 1; }
+  }
+  @keyframes slideOut {
+    0%   { transform: translateY(0)     scale(1);    opacity: 1; }
+    100% { transform: translateY(-50px) scale(0.88); opacity: 0; }
+  }
+
+  /* Top glow line */
+  .alert-card::before {
+    content: '';
+    position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+    background: linear-gradient(90deg, transparent, #FF2D2D, transparent);
+    animation: glowLine 2s ease-in-out infinite;
+  }
+  @keyframes glowLine {
+    0%,100% { opacity: 0.4; left: 20%; right: 20%; }
+    50%      { opacity: 1;   left: 5%;  right: 5%; }
+  }
+
+  /* Shimmer sweep */
+  .alert-card::after {
+    content: '';
+    position: absolute; top: 0; left: -80%; width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+    animation: sweep 3s ease-in-out infinite 0.6s;
+  }
+  @keyframes sweep { to { left: 130%; } }
+
+  /* ── Avatar ── */
+  .alert-avatar {
+    width: 58px; height: 58px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #FF2D2D, #ff6b6b);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; color: #fff; letter-spacing: 0.05em;
+    position: relative;
+  }
+  .alert-avatar::after {
+    content: '';
+    position: absolute; inset: -3px; border-radius: 50%;
+    border: 2px solid transparent;
+    background: conic-gradient(#FF2D2D, transparent 50%, #FF2D2D) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    animation: rotateBorder 2s linear infinite;
+  }
+  @keyframes rotateBorder { to { transform: rotate(360deg); } }
+
+  /* ── Text ── */
+  .alert-text { flex: 1; min-width: 0; }
+
+  .alert-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,45,45,0.18); border: 1px solid rgba(255,45,45,0.35);
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 11px; font-weight: 600; color: #FF6B6B;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 5px;
+  }
+  .alert-badge::before { content: '♥'; font-size: 10px; }
+
+  .alert-donor {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px; letter-spacing: 0.04em; color: #fff;
+    line-height: 1; margin-bottom: 3px;
+    text-shadow: 0 0 20px rgba(255,45,45,0.5);
+  }
+  .alert-donor span {
+    color: #FFD700;
+    text-shadow: 0 0 20px rgba(255,215,0,0.6);
+  }
+
+  .alert-msg {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; color: rgba(255,255,255,0.65);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 300px;
+  }
+
+  /* ── Amount badge ── */
+  .alert-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 34px; letter-spacing: 0.04em;
+    color: #FFD700;
+    text-shadow: 0 0 30px rgba(255,215,0,0.7), 0 0 60px rgba(255,215,0,0.3);
+    white-space: nowrap; flex-shrink: 0;
+    animation: amtPulse 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.4s both;
+  }
+  @keyframes amtPulse {
+    0%   { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+    100% { transform: scale(1)   rotate(0deg);  opacity: 1; }
+  }
+
+  /* ── Progress bar (visible duration) ── */
+  .progress-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: rgba(255,255,255,0.06); border-radius: 0 0 18px 18px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FF2D2D, #FFD700);
+    width: 100%;
+    transform-origin: left;
+    animation: drain 11s linear 0.8s forwards;
+  }
+  @keyframes drain { to { transform: scaleX(0); } }
+
+  /* ── Particle canvas (local) ── */
+  #pCanvas {
+    position: absolute; inset: 0;
+    pointer-events: none; border-radius: 18px;
+  }
+
+  /* ── Floating hearts ── */
+  .heart {
+    position: absolute;
+    font-size: 18px;
+    animation: floatHeart 2s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes floatHeart {
+    0%   { transform: translateY(0) scale(1);   opacity: 1; }
+    100% { transform: translateY(-90px) scale(0.5); opacity: 0; }
+  }
+
+  /* ── TTS queue indicator ── */
+  #ttsWrap {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    white-space: nowrap;
+  }
+  .tts-pill {
+    background: rgba(8,8,16,0.85);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; color: rgba(255,255,255,0.7);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tts-dot { width: 8px; height: 8px; border-radius: 50%; background: #FFD700; animation: blink 1s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+</style>
+</head>
+<body>
+
+<div id="alertWrap">
+  <div class="alert-card" id="alertCard">
+    <canvas id="pCanvas" width="460" height="100"></canvas>
+    <div class="alert-avatar" id="alertAvatar">?</div>
+    <div class="alert-text">
+      <div class="alert-badge">New Donation</div>
+      <div class="alert-donor" id="alertDonor">Donor Name <span id="alertAmtInline"></span></div>
+      <div class="alert-msg" id="alertMsg">Message will appear here</div>
+    </div>
+    <div class="alert-amount" id="alertAmt">₹99</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+</div>
+
+<div id="ttsWrap">
+  <div class="tts-pill"><div class="tts-dot"></div> Reading message...</div>
+</div>
+
+<script>
+/* ── CONFIG ── */
+// Auto-detect WebSocket URL from the page's own origin (works when served via Railway)
+// If testing locally change this to: 'ws://localhost:3000'
+const SERVER_URL = location.protocol === 'https:'
+  ? 'wss://' + location.host
+  : 'ws://'  + location.host;
+const ALERT_DURATION = 12000;   // ms alert stays visible (TTS extends this automatically)
+const SOUND_URL      = '';      // URL to .mp3 alert sound (optional)
+
+// TTS settings
+const TTS_ENABLED    = true;    // set false to disable TTS
+const TTS_VOICE_LANG = 'hi-IN'; // 'hi-IN' for Hindi, 'en-IN' for Indian English, 'en-US' for US English
+const TTS_RATE       = 0.95;    // speech speed: 0.5 (slow) to 2 (fast)
+const TTS_PITCH      = 1.1;     // voice pitch: 0 to 2
+const TTS_VOLUME     = 1.0;     // volume: 0 to 1
+const TTS_TEMPLATE   = (name, amount, msg) =>
+  msg
+    ? `${name} donated ₹${amount} and says: ${msg}`
+    : `${name} donated ₹${amount}! Thank you!`;
+/* ─────────── */
+
+let alertQueue = [];
+let isShowing  = false;
+let ttsActive  = false;
+
+/* ── TTS engine (OBS-compatible) ──
+   OBS Chromium often blocks speechSynthesis. We:
+   1. Unlock AudioContext on load (satisfies autoplay policy)
+   2. Detect if speech actually starts within 500ms
+   3. If blocked, fall back to a timer based on text length
+   so the alert ALWAYS stays for at least ALERT_DURATION.
+── */
+const synth = window.speechSynthesis;
+let voices   = [];
+
+function unlockAudio() {
+  try {
+    const actx = new (window.AudioContext || window.webkitAudioContext)();
+    actx.resume();
+    const buf = actx.createBuffer(1, 1, 22050);
+    const src = actx.createBufferSource();
+    src.buffer = buf; src.connect(actx.destination); src.start(0);
+  } catch(e) {}
+}
+unlockAudio();
+
+function loadVoices() { voices = synth.getVoices(); }
+loadVoices();
+if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
+
+function getBestVoice() {
+  const exact  = voices.find(v => v.lang === TTS_VOICE_LANG);
+  if (exact) return exact;
+  const prefix = TTS_VOICE_LANG.split('-')[0];
+  const loose  = voices.find(v => v.lang.startsWith(prefix));
+  return loose || voices.find(v => v.default) || voices[0] || null;
+}
+
+function speakTTS(text, onDone) {
+  if (!TTS_ENABLED || !text) { onDone(); return; }
+  synth.cancel();
+
+  const clean = text
+    .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+    .replace(/[^\p{L}\p{N}\p{P}\s]/gu, '')
+    .trim();
+  if (!clean) { onDone(); return; }
+
+  const ttsWrap = document.getElementById('ttsWrap');
+  ttsWrap.style.display = 'block';
+  ttsActive = true;
+
+  let finished = false;
+  function done() {
+    if (finished) return;
+    finished = true;
+    clearInterval(keepAlive);
+    ttsWrap.style.display = 'none';
+    ttsActive = false;
+    onDone();
+  }
+
+  // Estimate how long speech will take based on character count + rate
+  const estimatedMs = Math.max(3000, (clean.length / 13) * 1000 * (1 / TTS_RATE));
+
+  const utter  = new SpeechSynthesisUtterance(clean);
+  utter.lang   = TTS_VOICE_LANG;
+  utter.rate   = TTS_RATE;
+  utter.pitch  = TTS_PITCH;
+  utter.volume = TTS_VOLUME;
+  const voice  = getBestVoice();
+  if (voice) utter.voice = voice;
+
+  utter.onend   = done;
+  utter.onerror = done;
+
+  // Chromium keep-alive (prevents mid-sentence freeze)
+  const keepAlive = setInterval(() => {
+    if (!synth.speaking) { clearInterval(keepAlive); return; }
+    synth.pause(); synth.resume();
+  }, 8000);
+
+  // Hard cap: if speech takes way too long, force done
+  const hardCap = setTimeout(done, estimatedMs + 4000);
+  const origDone = done;
+  utter.onend = utter.onerror = () => { clearTimeout(hardCap); origDone(); };
+
+  synth.speak(utter);
+
+  // OBS block detector: if synth never started after 600ms, use timer fallback
+  setTimeout(() => {
+    if (!synth.speaking && !finished) {
+      console.warn('[tts] speechSynthesis blocked — timer fallback active');
+      clearTimeout(hardCap);
+      setTimeout(done, estimatedMs);
+    }
+  }, 600);
+}
+
+/* ── WebSocket connection ── */
+function connect() {
+  const ws = new WebSocket(SERVER_URL);
+
+  ws.onopen = () => console.log('[overlay] WS connected');
+
+  ws.onmessage = (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      if (data.type === 'donation') {
+        queueDonation(data);
+      }
+    } catch(err) { console.error(err); }
+  };
+
+  ws.onclose = () => {
+    console.log('[overlay] WS closed, reconnecting in 3s...');
+    setTimeout(connect, 3000);
+  };
+}
+
+connect();
+
+
+
+/* ── Queue: push incoming donation, never interrupt current alert ── */
+function queueDonation(data) {
+  alertQueue.push(data);
+  if (!isShowing) processQueue();
+}
+
+/* ── Process queue — called only when screen is clear ── */
+function processQueue() {
+  if (isShowing) return;              // still busy — do nothing, queue will drain naturally
+  if (!alertQueue.length) return;     // nothing waiting
+  isShowing = true;
+  showAlert(alertQueue.shift());
+}
+
+function showAlert(data) {
+  const card = document.getElementById('alertCard');
+  const initials = data.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
+
+  document.getElementById('alertAvatar').textContent = initials;
+  document.getElementById('alertDonor').innerHTML = data.name;
+  document.getElementById('alertMsg').textContent = data.message ? `"${data.message}"` : '';
+  document.getElementById('alertAmt').textContent = `₹${data.amount}`;
+
+  /* Reset progress bar */
+  const pf = document.getElementById('progressFill');
+  pf.style.animation = 'none';
+  void pf.offsetWidth;
+  pf.style.animation = 'drain 11s linear 0.8s forwards';
+
+  /* Play sound */
+  if (SOUND_URL) { try { new Audio(SOUND_URL).play(); } catch(e){} }
+
+  /* Show */
+  card.classList.remove('hide');
+  card.classList.add('show');
+
+  /* Particles + hearts */
+  spawnParticles();
+  spawnHearts();
+
+  /* TTS fires after alert slides in (0.8s), alert stays until TTS finishes */
+  const ttsText = TTS_TEMPLATE(data.name, data.amount, data.message || '');
+  let hidden = false;
+
+  function hideAlert() {
+    if (hidden) return;   // guard: never run twice
+    hidden = true;
+    synth.cancel();       // stop TTS immediately if fallback fires early
+    card.classList.remove('show');
+    card.classList.add('hide');
+    setTimeout(() => {
+      card.classList.remove('hide');
+      card.style.transform = '';
+      isShowing = false;  // ← mark free BEFORE processing next, so queue check is accurate
+      processQueue();     // show next queued donation if any
+    }, 450);
+  }
+
+  /* Wait for slide-in, then speak; hide only after TTS finishes + 0.8s pause */
+  setTimeout(() => {
+    speakTTS(ttsText, () => {
+      setTimeout(hideAlert, 800);
+    });
+  }, 800);
+
+  /* Hard fallback: force-hide after ALERT_DURATION + 15s max (covers very long TTS) */
+  setTimeout(hideAlert, ALERT_DURATION + 15000);
+}
+
+/* ── Local particle burst ── */
+const pCanvas = document.getElementById('pCanvas');
+const pCtx = pCanvas.getContext('2d');
+let pts = [];
+
+function spawnParticles() {
+  pts = [];
+  for (let i = 0; i < 40; i++) {
+    pts.push({
+      x: 50 + Math.random() * 30,
+      y: 50 + Math.random() * 20,
+      vx: (Math.random() - 0.5) * 4,
+      vy: (Math.random() - 0.5) * 4,
+      r: 1 + Math.random() * 3,
+      alpha: 1,
+      color: Math.random() > 0.5 ? '#FF2D2D' : '#FFD700'
+    });
+  }
+  animParticles();
+}
+
+function animParticles() {
+  pCtx.clearRect(0, 0, 460, 100);
+  pts = pts.filter(p => p.alpha > 0.02);
+  pts.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    p.alpha -= 0.025; p.vy += 0.05;
+    pCtx.beginPath();
+    pCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    pCtx.fillStyle = p.color;
+    pCtx.globalAlpha = p.alpha;
+    pCtx.fill();
+  });
+  pCtx.globalAlpha = 1;
+  if (pts.length > 0) requestAnimationFrame(animParticles);
+  else pCtx.clearRect(0, 0, 460, 100);
+}
+
+/* ── Floating hearts ── */
+function spawnHearts() {
+  const wrap = document.getElementById('alertWrap');
+  const emojis = ['❤️','💛','🔥','⭐','💎'];
+  for (let i = 0; i < 8; i++) {
+    setTimeout(() => {
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      h.style.left = (30 + Math.random() * 400) + 'px';
+      h.style.bottom = '10px';
+      h.style.animationDuration = (1.5 + Math.random()) + 's';
+      h.style.animationDelay = (Math.random() * 0.5) + 's';
+      wrap.appendChild(h);
+      h.addEventListener('animationend', () => h.remove());
+    }, i * 100);
+  }
+}
+</script>
+</body>
+</html>

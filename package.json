@@ -1,5 +1,5 @@
 {
-  "name": "yt-donation-alert-server",
+  "name": "Tips-alert-server",
   "version": "1.0.0",
   "description": "YouTube Donation Alert Server — Razorpay + WebSocket",
   "main": "server.js",
