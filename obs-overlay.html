@@ -198,6 +198,22 @@
 </head>
 <body>
 
+<!-- OBS Audio Unlock Screen — click once to enable TTS audio -->
+<div id="startScreen" style="
+  position:fixed; inset:0; z-index:999;
+  background:rgba(0,0,0,0.01);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+" onclick="unlockAndStart()">
+  <div style="
+    background:rgba(8,8,16,0.85); border:1px solid rgba(255,45,45,0.4);
+    border-radius:14px; padding:16px 28px; text-align:center;
+    font-family:'DM Sans',sans-serif; color:rgba(255,255,255,0.8); font-size:14px;
+  ">
+    🔊 Click anywhere to enable donation alerts & TTS
+  </div>
+</div>
+
 <div id="alertWrap">
   <div class="alert-card" id="alertCard">
     <canvas id="pCanvas" width="460" height="100"></canvas>
@@ -252,7 +268,15 @@ let ttsActive  = false;
 const synth = window.speechSynthesis;
 let voices   = [];
 
-function unlockAudio() {
+let audioUnlocked = false;
+
+function unlockAndStart() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  // Hide the click screen
+  const screen = document.getElementById('startScreen');
+  if (screen) screen.style.display = 'none';
+  // Unlock AudioContext for OBS
   try {
     const actx = new (window.AudioContext || window.webkitAudioContext)();
     actx.resume();
@@ -260,8 +284,15 @@ function unlockAudio() {
     const src = actx.createBufferSource();
     src.buffer = buf; src.connect(actx.destination); src.start(0);
   } catch(e) {}
+  // Reload voices now that audio is unlocked
+  loadVoices();
+  console.log('[overlay] Audio unlocked, alerts ready');
 }
-unlockAudio();
+
+// Auto-unlock after 2s in case OBS doesn't need interaction (some versions)
+setTimeout(() => {
+  if (!audioUnlocked) unlockAndStart();
+}, 2000);
 
 function loadVoices() { voices = synth.getVoices(); }
 loadVoices();
@@ -419,15 +450,20 @@ function showAlert(data) {
     }, 450);
   }
 
-  /* Wait for slide-in, then speak; hide only after TTS finishes + 0.8s pause */
+  /* Wait for slide-in then speak.
+     Alert stays for ALERT_DURATION minimum.
+     If TTS finishes before ALERT_DURATION, wait out the remaining time first. */
+  const alertStart = Date.now();
   setTimeout(() => {
     speakTTS(ttsText, () => {
-      setTimeout(hideAlert, 800);
+      const elapsed = Date.now() - alertStart;
+      const remaining = Math.max(0, ALERT_DURATION - elapsed);
+      setTimeout(hideAlert, remaining + 500);
     });
   }, 800);
 
-  /* Hard fallback: force-hide after ALERT_DURATION + 15s max (covers very long TTS) */
-  setTimeout(hideAlert, ALERT_DURATION + 15000);
+  /* Hard fallback: force-hide after ALERT_DURATION + 20s max (covers very long TTS) */
+  setTimeout(hideAlert, ALERT_DURATION + 20000);
 }
 
 /* ── Local particle burst ── */

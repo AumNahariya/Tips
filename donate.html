@@ -490,7 +490,24 @@ async function startPayment() {
     order_id: orderId,
     prefill: { name },
     theme: { color: '#FF2D2D' },
-    handler: function(response) {
+    handler: async function(response) {
+      // Verify payment on server — this triggers the OBS alert
+      try {
+        await fetch(`${SERVER_URL}/verify-payment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_order_id:   response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature:  response.razorpay_signature,
+            donor_name: name,
+            message:    msg,
+            amount:     amt
+          })
+        });
+      } catch(e) {
+        console.warn('Could not verify payment with server:', e);
+      }
       onPaymentSuccess(name, amt, msg, response.razorpay_payment_id);
     }
   };
