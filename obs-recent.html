@@ -18,6 +18,7 @@
     pointer-events: none;
   }
 
+  /* ── Header ── */
   .panel-header {
     display: flex; align-items: center; gap: 8px;
     margin-bottom: 8px;
@@ -33,54 +34,72 @@
     background: linear-gradient(90deg, rgba(255,45,45,0.4), transparent);
   }
 
-  #recentList { display: flex; flex-direction: column; gap: 5px; }
+  /* ── Slider window — only 1 card visible at a time ── */
+  #sliderWindow {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    /* Height fits one card — adjust if font size changes */
+    height: 58px;
+  }
 
-  .d-row {
+  /* ── Single donation card ── */
+  .d-card {
+    position: absolute; top: 0; left: 0; right: 0;
     display: flex; align-items: center; gap: 8px;
-    background: rgba(8,8,16,0.82);
+    background: rgba(8,8,16,0.85);
     border: 1px solid rgba(255,255,255,0.07);
-    border-left: 2px solid rgba(255,45,45,0.5);
-    border-radius: 9px;
-    padding: 7px 10px;
+    border-left: 3px solid rgba(255,45,45,0.6);
+    border-radius: 10px;
+    padding: 8px 12px;
     backdrop-filter: blur(16px);
-    animation: rowIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
-    position: relative; overflow: hidden;
+    height: 58px;
+    /* start off-screen right */
+    transform: translateX(110%);
+    transition: transform 0.55s cubic-bezier(0.34,1.2,0.64,1), opacity 0.4s;
+    opacity: 0;
   }
-  .d-row::after {
+  .d-card.active {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  .d-card.exit-left {
+    transform: translateX(-110%);
+    opacity: 0;
+  }
+
+  /* New donation — gold accent */
+  .d-card.is-new { border-left-color: #FFD700; }
+
+  /* Shimmer */
+  .d-card::after {
     content: '';
-    position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
-    animation: rowShimmer 4s ease-in-out infinite;
+    position: absolute; top:0; left:-60%; width:40%; height:100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+    animation: shimmer 3s ease-in-out infinite;
+    border-radius: 10px;
   }
-  @keyframes rowShimmer { to { left: 120%; } }
-  .d-row.new-row { border-left-color: #FFD700; }
-  .d-row.new-row .d-rank { color: #FFD700; }
+  @keyframes shimmer { to { left: 120%; } }
 
-  @keyframes rowIn {
-    from { transform: translateX(30px); opacity: 0; }
-    to   { transform: translateX(0);    opacity: 1; }
-  }
-  @keyframes rowOut {
-    from { transform: translateX(0);    opacity: 1; max-height: 50px; margin-bottom: 5px; }
-    to   { transform: translateX(30px); opacity: 0; max-height: 0;    margin-bottom: 0; }
-  }
-  .d-row.leaving { animation: rowOut 0.3s ease forwards; }
-
-  .d-rank {
+  .d-index {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 12px; color: rgba(255,45,45,0.7);
-    min-width: 16px; text-align: center; flex-shrink: 0;
+    font-size: 12px; color: rgba(255,45,45,0.6);
+    min-width: 18px; text-align: center; flex-shrink: 0;
   }
+  .d-card.is-new .d-index { color: #FFD700; }
+
   .d-avatar {
-    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
     background: linear-gradient(135deg, #FF2D2D, #ff6b6b);
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue', sans-serif; font-size: 10px; color: #fff;
+    font-family: 'Bebas Neue', sans-serif; font-size: 11px; color: #fff;
   }
+  .d-card.is-new .d-avatar { background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; }
+
   .d-info { flex: 1; min-width: 0; }
   .d-name {
     font-family: 'DM Sans', sans-serif;
-    font-size: 12px; font-weight: 600; color: #fff;
+    font-size: 13px; font-weight: 600; color: #fff;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .d-msg {
@@ -89,14 +108,27 @@
   }
   .d-amount {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 15px; color: #FFD700;
+    font-size: 18px; color: #FFD700;
     text-shadow: 0 0 10px rgba(255,215,0,0.5);
     flex-shrink: 0; white-space: nowrap;
   }
+
+  /* ── Dots indicator ── */
+  #dots {
+    display: flex; justify-content: center; gap: 5px;
+    margin-top: 6px;
+  }
+  .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    transition: background 0.3s, transform 0.3s;
+  }
+  .dot.active { background: #FF2D2D; transform: scale(1.3); }
+
   .empty-state {
     font-family: 'DM Sans', sans-serif;
     font-size: 11px; color: rgba(255,255,255,0.2);
-    text-align: center; padding: 10px 0;
+    text-align: center; padding: 18px 0;
   }
 </style>
 </head>
@@ -106,63 +138,140 @@
     <div class="panel-title">RECENT <span>DONATIONS</span></div>
     <div class="panel-line"></div>
   </div>
-  <div id="recentList">
+  <div id="sliderWindow">
     <div class="empty-state">Waiting for donations...</div>
   </div>
+  <div id="dots"></div>
 </div>
 
 <script>
-const SERVER_URL = location.protocol === 'https:' ? 'wss://' + location.host + '/ws' : 'ws://' + location.host + '/ws';
-const MAX_ROWS   = 5;
-let donations    = [];
+const proto      = location.protocol === 'https:' ? 'wss:' : 'ws:';
+const SERVER_URL = proto + '//' + location.host + '/ws';
+const MAX_ITEMS  = 5;       // keep last 5 donations
+const SLIDE_MS   = 3500;    // how long each card is shown (ms)
 
+let donations    = [];      // newest first
+let currentIdx   = 0;       // which card is active
+let slideTimer   = null;
+let isAnimating  = false;
+
+/* ── WebSocket ── */
 function connect() {
+  console.log('[recent] connecting to', SERVER_URL);
   const ws = new WebSocket(SERVER_URL);
-  ws.onopen    = () => console.log('[recent] connected to', SERVER_URL);
+  ws.onopen    = () => console.log('[recent] WS connected');
   ws.onmessage = (e) => {
-    try { const d = JSON.parse(e.data); if (d.type === 'donation') addDonation(d); } catch(err) {}
+    try {
+      const d = JSON.parse(e.data);
+      if (d.type === 'donation') addDonation(d);
+    } catch(err) {}
   };
   ws.onclose = () => { console.log('[recent] reconnecting...'); setTimeout(connect, 3000); };
   ws.onerror = (e) => console.error('[recent] WS error', e);
 }
 connect();
 
+/* ── Add new donation ── */
 function addDonation(data) {
-  donations.unshift({ name: data.name, amount: data.amount, message: data.message || '' });
-  if (donations.length > MAX_ROWS) donations = donations.slice(0, MAX_ROWS);
-  renderList(true);
+  donations.unshift({ name: data.name, amount: data.amount, message: data.message || '', isNew: true });
+  if (donations.length > MAX_ITEMS) donations = donations.slice(0, MAX_ITEMS);
+  // Always jump to newest (index 0) when a new donation arrives
+  buildSlider();
+  goTo(0, 'new');
+  // Clear isNew flag after a few seconds
+  setTimeout(() => { if (donations[0]) donations[0].isNew = false; }, 4000);
 }
 
-function renderList(isNew) {
-  const list = document.getElementById('recentList');
-  if (list.querySelector('.empty-state')) list.innerHTML = '';
+/* ── Build slider DOM ── */
+function buildSlider() {
+  const win = document.getElementById('sliderWindow');
+  win.innerHTML = '';
+  donations.forEach((d, i) => {
+    const initials = d.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
+    const card = document.createElement('div');
+    card.className = 'd-card' + (d.isNew ? ' is-new' : '');
+    card.id = 'card-' + i;
+    card.innerHTML = `
+      <div class="d-index">#${i+1}</div>
+      <div class="d-avatar">${initials}</div>
+      <div class="d-info">
+        <div class="d-name">${d.name}</div>
+        ${d.message ? `<div class="d-msg">"${d.message}"</div>` : ''}
+      </div>
+      <div class="d-amount">₹${d.amount}</div>`;
+    win.appendChild(card);
+  });
+  buildDots();
+}
 
-  if (isNew) {
-    list.querySelectorAll('.d-row:not(.leaving)').forEach(r => {
-      r.classList.add('leaving');
-      r.addEventListener('animationend', () => r.remove(), { once: true });
-    });
+/* ── Dots ── */
+function buildDots() {
+  const dotsEl = document.getElementById('dots');
+  dotsEl.innerHTML = '';
+  donations.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === currentIdx ? ' active' : '');
+    dot.id = 'dot-' + i;
+    dotsEl.appendChild(dot);
+  });
+}
+
+function updateDots() {
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.classList.toggle('active', i === currentIdx);
+  });
+}
+
+/* ── Slide to index ── */
+function goTo(newIdx, direction) {
+  if (isAnimating || donations.length === 0) return;
+  if (newIdx === currentIdx && direction !== 'new') return;
+  isAnimating = true;
+
+  const oldCard = document.getElementById('card-' + currentIdx);
+  const newCard = document.getElementById('card-' + newIdx);
+  if (!newCard) { isAnimating = false; return; }
+
+  // Exit old card to left
+  if (oldCard && oldCard !== newCard) {
+    oldCard.classList.remove('active');
+    oldCard.classList.add('exit-left');
   }
 
+  // Enter new card from right
+  newCard.style.transform = 'translateX(110%)';
+  newCard.style.opacity   = '0';
+  void newCard.offsetWidth;
+  newCard.classList.add('active');
+
+  currentIdx = newIdx;
+  updateDots();
+
   setTimeout(() => {
-    list.innerHTML = '';
-    donations.forEach((d, i) => {
-      const initials = d.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
-      const row = document.createElement('div');
-      row.className = 'd-row' + (i === 0 && isNew ? ' new-row' : '');
-      row.style.animationDelay = (i * 0.06) + 's';
-      row.innerHTML = `
-        <div class="d-rank">#${i+1}</div>
-        <div class="d-avatar">${initials}</div>
-        <div class="d-info">
-          <div class="d-name">${d.name}</div>
-          ${d.message ? `<div class="d-msg">"${d.message}"</div>` : ''}
-        </div>
-        <div class="d-amount">₹${d.amount}</div>`;
-      list.appendChild(row);
+    // Clean up exit-left cards
+    document.querySelectorAll('.d-card.exit-left').forEach(c => {
+      c.classList.remove('exit-left');
+      c.style.transform = 'translateX(110%)';
+      c.style.opacity   = '0';
     });
-  }, isNew ? 200 : 0);
+    isAnimating = false;
+  }, 600);
+
+  resetTimer();
 }
+
+/* ── Auto-advance timer ── */
+function resetTimer() {
+  if (slideTimer) clearInterval(slideTimer);
+  if (donations.length <= 1) return;
+  slideTimer = setInterval(() => {
+    const next = (currentIdx + 1) % donations.length;
+    goTo(next, 'next');
+  }, SLIDE_MS);
+}
+
+/* ── Init ── */
+buildDots();
 </script>
 </body>
 </html>

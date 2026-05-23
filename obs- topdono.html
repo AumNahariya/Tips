@@ -45,9 +45,11 @@
     padding: 12px 14px;
     backdrop-filter: blur(20px);
     position: relative; overflow: hidden;
-    opacity: 0; transition: opacity 0.5s;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.5s, transform 0.5s;
   }
-  #topCard.visible { opacity: 1; }
+  #topCard.visible { opacity: 1; transform: translateY(0); }
 
   #topCard::before {
     content: '';
@@ -110,9 +112,9 @@
 
   @keyframes newRecord {
     0%,100% { box-shadow: 0 0 0 0 rgba(255,215,0,0); }
-    50%      { box-shadow: 0 0 0 10px rgba(255,215,0,0.15); }
+    50%      { box-shadow: 0 0 0 10px rgba(255,215,0,0.2); }
   }
-  #topCard.new-record { animation: newRecord 1s ease-in-out 3; border-color: rgba(255,215,0,0.7); }
+  #topCard.new-record { animation: newRecord 0.8s ease-in-out 4; border-color: rgba(255,215,0,0.8); }
 
   .empty-state {
     font-family: 'DM Sans', sans-serif;
@@ -134,23 +136,47 @@
 </div>
 
 <script>
-const SERVER_URL = location.protocol === 'https:' ? 'wss://' + location.host + '/ws' : 'ws://' + location.host + '/ws';
+// Auto-detect WebSocket — works from any Railway URL path
+const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+const SERVER_URL = proto + '//' + location.host + '/ws';
+
 let topDonor = null;
+let wsReady  = false;
 
 function connect() {
+  console.log('[topdono] connecting to', SERVER_URL);
   const ws = new WebSocket(SERVER_URL);
-  ws.onopen    = () => console.log('[topdono] connected to', SERVER_URL);
-  ws.onmessage = (e) => {
-    try { const d = JSON.parse(e.data); if (d.type === 'donation') checkTopDonor(d); } catch(err) {}
+
+  ws.onopen = () => {
+    wsReady = true;
+    console.log('[topdono] WS connected');
   };
-  ws.onclose = () => { console.log('[topdono] reconnecting...'); setTimeout(connect, 3000); };
-  ws.onerror = (e) => console.error('[topdono] WS error', e);
+
+  ws.onmessage = (e) => {
+    try {
+      const d = JSON.parse(e.data);
+      console.log('[topdono] received:', d.type, d.name, d.amount);
+      if (d.type === 'donation') checkTopDonor(d);
+    } catch(err) { console.error('[topdono] parse error', err); }
+  };
+
+  ws.onclose = (e) => {
+    wsReady = false;
+    console.log('[topdono] WS closed, reconnecting in 3s...', e.code);
+    setTimeout(connect, 3000);
+  };
+
+  ws.onerror = (e) => {
+    console.error('[topdono] WS error:', e);
+  };
 }
+
 connect();
 
 function checkTopDonor(data) {
   const amt = parseFloat(data.amount);
-  if (!topDonor || amt > parseFloat(topDonor.amount)) {
+  const isNew = !topDonor || amt > parseFloat(topDonor.amount);
+  if (isNew) {
     topDonor = { name: data.name, amount: data.amount };
     renderTop(true);
   }
@@ -159,20 +185,26 @@ function checkTopDonor(data) {
 function renderTop(isNewRecord) {
   const card = document.getElementById('topCard');
   if (!topDonor) return;
+
   const initials = topDonor.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
-  card.classList.remove('new-record');
+
+  // Fade out, update, fade in
+  card.classList.remove('visible', 'new-record');
   void card.offsetWidth;
-  card.innerHTML = `
-    <div class="top-inner">
-      <div class="top-avatar">${initials}</div>
-      <div class="top-info">
-        <div class="top-label">Top Supporter</div>
-        <div class="top-name">${topDonor.name}</div>
-      </div>
-      <div class="top-amount">₹${topDonor.amount}</div>
-    </div>`;
-  card.classList.add('visible');
-  if (isNewRecord) setTimeout(() => card.classList.add('new-record'), 100);
+
+  setTimeout(() => {
+    card.innerHTML = `
+      <div class="top-inner">
+        <div class="top-avatar">${initials}</div>
+        <div class="top-info">
+          <div class="top-label">Top Supporter 👑</div>
+          <div class="top-name">${topDonor.name}</div>
+        </div>
+        <div class="top-amount">₹${topDonor.amount}</div>
+      </div>`;
+    card.classList.add('visible');
+    if (isNewRecord) setTimeout(() => card.classList.add('new-record'), 100);
+  }, 300);
 }
 </script>
 </body>
