@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Top Donation</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: transparent !important;
+    width: 1920px; height: 1080px;
+    overflow: hidden; position: relative;
+  }
+
+  /* ── Panel — bottom left ── */
+  #topPanel {
+    position: absolute;
+    bottom: 40px; left: 40px;
+    width: 300px;
+    pointer-events: none;
+  }
+
+  .panel-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px;
+  }
+  .crown-icon { font-size: 18px; animation: crownBob 2s ease-in-out infinite; }
+  @keyframes crownBob {
+    0%,100% { transform: translateY(0) rotate(-5deg); }
+    50%      { transform: translateY(-4px) rotate(5deg); }
+  }
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px; letter-spacing: 0.1em; color: rgba(255,255,255,0.5);
+  }
+  .panel-title span { color: #FFD700; }
+  .panel-line {
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, rgba(255,215,0,0.4), transparent);
+  }
+
+  /* ── Top donor card ── */
+  #topCard {
+    background: rgba(8,8,16,0.88);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 14px;
+    padding: 14px 16px;
+    backdrop-filter: blur(20px);
+    position: relative; overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  #topCard.visible { opacity: 1; }
+
+  /* Gold top glow */
+  #topCard::before {
+    content: '';
+    position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+    background: linear-gradient(90deg, transparent, #FFD700, transparent);
+    animation: goldGlow 3s ease-in-out infinite;
+  }
+  @keyframes goldGlow {
+    0%,100% { opacity: 0.4; left: 20%; right: 20%; }
+    50%      { opacity: 1;   left: 5%;  right: 5%; }
+  }
+  /* Shimmer */
+  #topCard::after {
+    content: '';
+    position: absolute; top: 0; left: -80%; width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.05), transparent);
+    animation: sweep 4s ease-in-out infinite;
+  }
+  @keyframes sweep { to { left: 130%; } }
+
+  .top-inner { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+
+  .top-avatar {
+    width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #FFD700, #FF8C00);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: #000;
+    position: relative;
+    box-shadow: 0 0 20px rgba(255,215,0,0.4);
+  }
+  .top-avatar::after {
+    content: '';
+    position: absolute; inset: -3px; border-radius: 50%;
+    border: 2px solid transparent;
+    background: conic-gradient(#FFD700, transparent 50%, #FFD700) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out; mask-composite: exclude;
+    animation: rotateBorder 2s linear infinite;
+  }
+  @keyframes rotateBorder { to { transform: rotate(360deg); } }
+
+  .top-info { flex: 1; min-width: 0; }
+  .top-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 0.04em; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-shadow: 0 0 15px rgba(255,215,0,0.3);
+  }
+  .top-label {
+    font-size: 11px; color: rgba(255,255,255,0.35);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .top-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; letter-spacing: 0.04em; color: #FFD700;
+    text-shadow: 0 0 25px rgba(255,215,0,0.8), 0 0 50px rgba(255,215,0,0.3);
+    flex-shrink: 0;
+  }
+
+  /* New record flash */
+  @keyframes newRecord {
+    0%,100% { box-shadow: 0 0 0 0 rgba(255,215,0,0); }
+    50%      { box-shadow: 0 0 0 12px rgba(255,215,0,0.15); }
+  }
+  #topCard.new-record {
+    animation: newRecord 1s ease-in-out 3;
+    border-color: rgba(255,215,0,0.7);
+  }
+
+  .empty-state {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; color: rgba(255,255,255,0.2);
+    text-align: center; padding: 10px 0;
+  }
+</style>
+</head>
+<body>
+
+<div id="topPanel">
+  <div class="panel-header">
+    <div class="crown-icon">👑</div>
+    <div class="panel-title">TOP <span>DONATION</span></div>
+    <div class="panel-line"></div>
+  </div>
+  <div id="topCard">
+    <div class="empty-state">Waiting for donations...</div>
+  </div>
+</div>
+
+<script>
+const SERVER_URL = location.protocol === 'https://your-railway-url/overlay/top'
+  ? 'wss://your-railway-url/overlay/top' + location.host
+  : 'ws://your-railway-url/overlay/top'  + location.host;
+
+let topDonor = null; // { name, amount }
+
+function connect() {
+  const ws = new WebSocket(SERVER_URL);
+  ws.onopen    = () => console.log('[topdono] WS connected');
+  ws.onmessage = (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      if (data.type === 'donation') checkTopDonor(data);
+    } catch(err) {}
+  };
+  ws.onclose = () => setTimeout(connect, 3000);
+}
+connect();
+
+function checkTopDonor(data) {
+  const amt     = parseFloat(data.amount);
+  const isNewRecord = !topDonor || amt > parseFloat(topDonor.amount);
+
+  if (isNewRecord) {
+    topDonor = { name: data.name, amount: data.amount };
+    renderTop(true);
+  }
+}
+
+function renderTop(isNewRecord) {
+  const card = document.getElementById('topCard');
+  if (!topDonor) return;
+
+  const initials = topDonor.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
+
+  card.classList.remove('new-record');
+  void card.offsetWidth; // reflow to restart animation
+
+  card.innerHTML = `
+    <div class="top-inner">
+      <div class="top-avatar">${initials}</div>
+      <div class="top-info">
+        <div class="top-label">Top Supporter</div>
+        <div class="top-name">${topDonor.name}</div>
+      </div>
+      <div class="top-amount">₹${topDonor.amount}</div>
+    </div>`;
+
+  card.classList.add('visible');
+  if (isNewRecord) {
+    setTimeout(() => card.classList.add('new-record'), 100);
+  }
+}
+</script>
+</body>
+</html>
