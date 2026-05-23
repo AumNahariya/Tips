@@ -99,7 +99,8 @@ app.post('/create-order', async (req, res) => {
   }
 });
 
-// Verify payment after Razorpay checkout (client-side verification)
+// Verify payment after Razorpay checkout (signature check only — no broadcast)
+// The webhook below handles the actual OBS alert broadcast to avoid double alerts
 app.post('/verify-payment', (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, donor_name, message, amount } = req.body;
 
@@ -114,17 +115,8 @@ app.post('/verify-payment', (req, res) => {
   }
 
   console.log(`[payment] Verified: ${razorpay_payment_id} | ₹${amount} by ${donor_name}`);
-
-  // Broadcast to all OBS overlays
-  broadcast({
-    type: 'donation',
-    name: donor_name || 'Anonymous',
-    amount: amount,
-    message: message || '',
-    paymentId: razorpay_payment_id,
-    timestamp: new Date().toISOString()
-  });
-
+  // NOTE: broadcast is handled by the Razorpay webhook (payment.captured)
+  // This prevents the alert from showing twice
   res.json({ success: true });
 });
 
