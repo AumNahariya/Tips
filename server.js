@@ -15,9 +15,9 @@ const fs         = require('fs');
 
 // ── CONFIG (set these as environment variables) ──────────────
 const PORT                 = process.env.PORT                  || 3000;
-const RAZORPAY_KEY_ID      = process.env.RAZORPAY_KEY_ID      || 'rzp_test_XXXXXX';
-const RAZORPAY_KEY_SECRET  = process.env.RAZORPAY_KEY_SECRET  || 'your_secret_here';
-const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || 'your_webhook_secret';
+const RAZORPAY_KEY_ID      = process.env.RAZORPAY_KEY_ID      || 'rzp_test_SsSX9cBE5iMrD0';
+const RAZORPAY_KEY_SECRET  = process.env.RAZORPAY_KEY_SECRET  || 'KdvrvdxcxZzQjr4it5s7VVff';
+const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || 'aumii062303';
 // ─────────────────────────────────────────────────────────────
 
 const app = express();
