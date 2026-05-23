@@ -120,9 +120,7 @@
 </div>
 
 <script>
-const SERVER_URL = location.protocol === 'https://your-railway-url/overlay/recent'
-  ? 'wss://your-railway-url/overlay/recent' + location.host
-  : 'ws://your-railway-url/overlay/recent'  + location.host;
+const SERVER_URL = location.protocol === 'https:' ? 'wss://' + location.host : 'ws://' + location.host;
 
 const MAX_ROWS   = 5;
 let donations    = []; // array of { name, amount, message }

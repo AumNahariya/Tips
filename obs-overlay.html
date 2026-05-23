@@ -175,7 +175,7 @@
 
 <script>
 /* ── CONFIG ── */
-const SERVER_URL     = location.protocol === 'https://your-railway-url/overlay' ? 'wss://your-railway-url/overlay' + location.host : 'ws://' + location.host;
+const SERVER_URL     = location.protocol === 'https:' ? 'wss://' + location.host : 'ws://' + location.host;
 const ALERT_DURATION = 12000;
 const SOUND_URL      = '';
 const TTS_ENABLED    = true;
