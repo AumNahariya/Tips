@@ -2,21 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<title>Donation Alert Overlay</title>
+<title>Donation Alert</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* Transparent — OBS moves/resizes this source freely */
   html, body {
     background: transparent !important;
-    width: 1920px; height: 1080px;
-    overflow: hidden; position: relative;
+    width: 100%; height: 100%;
+    overflow: hidden;
+    display: flex; align-items: flex-start; justify-content: center;
   }
 
   #alertWrap {
-    position: absolute;
-    top: 120px; left: 50%;
-    transform: translateX(-50%);
-    width: 520px;
+    width: 100%;
+    padding: 10px;
     pointer-events: none;
   }
 
@@ -25,8 +26,8 @@
     background: rgba(8,8,16,0.92);
     border: 1px solid rgba(255,45,45,0.5);
     border-radius: 18px;
-    padding: 18px 20px;
-    display: flex; align-items: center; gap: 16px;
+    padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
     backdrop-filter: blur(24px);
     overflow: hidden;
     transform: translateY(-60px) scale(0.88);
@@ -38,12 +39,12 @@
 
   @keyframes slideIn {
     0%   { transform: translateY(-60px) scale(0.88); opacity: 0; }
-    60%  { transform: translateY(10px)  scale(1.02); opacity: 1; }
-    100% { transform: translateY(0)     scale(1);    opacity: 1; }
+    60%  { transform: translateY(8px) scale(1.02);   opacity: 1; }
+    100% { transform: translateY(0) scale(1);         opacity: 1; }
   }
   @keyframes slideOut {
-    0%   { transform: translateY(0)     scale(1);    opacity: 1; }
-    100% { transform: translateY(-50px) scale(0.88); opacity: 0; }
+    0%   { transform: translateY(0) scale(1);         opacity: 1; }
+    100% { transform: translateY(-50px) scale(0.88);  opacity: 0; }
   }
 
   .alert-card::before {
@@ -53,23 +54,22 @@
     animation: glowLine 2s ease-in-out infinite;
   }
   @keyframes glowLine {
-    0%,100% { opacity: 0.4; left: 20%; right: 20%; }
-    50%      { opacity: 1;   left: 5%;  right: 5%; }
+    0%,100% { opacity:0.4; left:20%; right:20%; }
+    50%      { opacity:1;   left:5%;  right:5%; }
   }
   .alert-card::after {
     content: '';
-    position: absolute; top: 0; left: -80%; width: 60%; height: 100%;
+    position: absolute; top:0; left:-80%; width:60%; height:100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
     animation: sweep 3s ease-in-out infinite 0.6s;
   }
   @keyframes sweep { to { left: 130%; } }
 
   .alert-avatar {
-    width: 58px; height: 58px; border-radius: 50%; flex-shrink: 0;
+    width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
     background: linear-gradient(135deg, #FF2D2D, #ff6b6b);
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px; color: #fff; letter-spacing: 0.05em;
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: #fff;
     position: relative;
   }
   .alert-avatar::after {
@@ -78,43 +78,42 @@
     border: 2px solid transparent;
     background: conic-gradient(#FF2D2D, transparent 50%, #FF2D2D) border-box;
     -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: destination-out;
-    mask-composite: exclude;
+    -webkit-mask-composite: destination-out; mask-composite: exclude;
     animation: rotateBorder 2s linear infinite;
   }
   @keyframes rotateBorder { to { transform: rotate(360deg); } }
 
   .alert-text { flex: 1; min-width: 0; }
   .alert-badge {
-    display: inline-flex; align-items: center; gap: 5px;
+    display: inline-flex; align-items: center; gap: 4px;
     background: rgba(255,45,45,0.18); border: 1px solid rgba(255,45,45,0.35);
-    border-radius: 20px; padding: 3px 10px;
-    font-size: 11px; font-weight: 600; color: #FF6B6B;
-    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px;
+    border-radius: 20px; padding: 2px 9px;
+    font-size: 10px; font-weight: 600; color: #FF6B6B;
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;
   }
-  .alert-badge::before { content: '♥'; font-size: 10px; }
+  .alert-badge::before { content: '♥'; font-size: 9px; }
   .alert-donor {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 26px; letter-spacing: 0.04em; color: #fff;
-    line-height: 1; margin-bottom: 3px;
+    font-size: 22px; letter-spacing: 0.04em; color: #fff;
+    line-height: 1; margin-bottom: 2px;
     text-shadow: 0 0 20px rgba(255,45,45,0.5);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .alert-msg {
     font-family: 'DM Sans', sans-serif;
-    font-size: 13px; color: rgba(255,255,255,0.65);
+    font-size: 12px; color: rgba(255,255,255,0.65);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    max-width: 300px;
   }
   .alert-amount {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 34px; letter-spacing: 0.04em; color: #FFD700;
-    text-shadow: 0 0 30px rgba(255,215,0,0.7), 0 0 60px rgba(255,215,0,0.3);
+    font-size: 30px; letter-spacing: 0.04em; color: #FFD700;
+    text-shadow: 0 0 30px rgba(255,215,0,0.7);
     white-space: nowrap; flex-shrink: 0;
     animation: amtPulse 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.4s both;
   }
   @keyframes amtPulse {
     0%   { transform: scale(0.5) rotate(-8deg); opacity: 0; }
-    100% { transform: scale(1)   rotate(0deg);  opacity: 1; }
+    100% { transform: scale(1) rotate(0deg);    opacity: 1; }
   }
   .progress-bar {
     position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
@@ -131,33 +130,31 @@
   #pCanvas { position: absolute; inset: 0; pointer-events: none; border-radius: 18px; }
 
   .heart {
-    position: absolute; font-size: 18px;
+    position: absolute; font-size: 16px;
     animation: floatHeart 2s ease-out forwards; pointer-events: none;
   }
   @keyframes floatHeart {
     0%   { transform: translateY(0) scale(1);       opacity: 1; }
-    100% { transform: translateY(-90px) scale(0.5); opacity: 0; }
+    100% { transform: translateY(-80px) scale(0.5); opacity: 0; }
   }
 
   #ttsWrap {
-    position: absolute; bottom: 40px; left: 50%;
-    transform: translateX(-50%); display: none; white-space: nowrap;
+    text-align: center; margin-top: 8px; display: none;
   }
   .tts-pill {
+    display: inline-flex; align-items: center; gap: 6px;
     background: rgba(8,8,16,0.85); border: 1px solid rgba(255,215,0,0.3);
-    border-radius: 30px; padding: 8px 16px;
-    font-family: 'DM Sans', sans-serif; font-size: 13px; color: rgba(255,255,255,0.7);
-    display: flex; align-items: center; gap: 8px;
+    border-radius: 30px; padding: 6px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; color: rgba(255,255,255,0.7);
   }
-  .tts-dot { width: 8px; height: 8px; border-radius: 50%; background: #FFD700; animation: blink 1s ease-in-out infinite; }
+  .tts-dot { width: 7px; height: 7px; border-radius: 50%; background: #FFD700; animation: blink 1s ease-in-out infinite; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 </style>
 </head>
 <body>
-
 <div id="alertWrap">
   <div class="alert-card" id="alertCard">
-    <canvas id="pCanvas" width="460" height="100"></canvas>
+    <canvas id="pCanvas" width="460" height="90"></canvas>
     <div class="alert-avatar" id="alertAvatar">?</div>
     <div class="alert-text">
       <div class="alert-badge">New Donation</div>
@@ -167,14 +164,12 @@
     <div class="alert-amount" id="alertAmt">₹99</div>
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
   </div>
-</div>
-
-<div id="ttsWrap">
-  <div class="tts-pill"><div class="tts-dot"></div> Reading message...</div>
+  <div id="ttsWrap">
+    <div class="tts-pill"><div class="tts-dot"></div> Reading message...</div>
+  </div>
 </div>
 
 <script>
-/* ── CONFIG ── */
 const SERVER_URL     = location.protocol === 'https:' ? 'wss://' + location.host + '/ws' : 'ws://' + location.host + '/ws';
 const ALERT_DURATION = 12000;
 const SOUND_URL      = '';
@@ -185,20 +180,13 @@ const TTS_PITCH      = 1.1;
 const TTS_VOLUME     = 1.0;
 const TTS_TEMPLATE   = (name, amount, msg) =>
   msg ? `${name} donated ₹${amount} and says: ${msg}` : `${name} donated ₹${amount}! Thank you!`;
-/* ─────────── */
 
-let alertQueue = [];
-let isShowing  = false;
-let ttsActive  = false;
-let audioUnlocked = false;
-
+let alertQueue = [], isShowing = false, ttsActive = false, audioUnlocked = false;
 const synth = window.speechSynthesis;
-let voices  = [];
+let voices = [];
 
 function unlockAndStart() {
-  if (audioUnlocked) return;
-  audioUnlocked = true;
-  document.getElementById('startScreen') && (document.getElementById('startScreen').style.display = 'none');
+  if (audioUnlocked) return; audioUnlocked = true;
   try {
     const actx = new (window.AudioContext || window.webkitAudioContext)();
     actx.resume();
@@ -216,10 +204,8 @@ loadVoices();
 if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
 
 function getBestVoice() {
-  const exact  = voices.find(v => v.lang === TTS_VOICE_LANG);
-  if (exact) return exact;
-  const prefix = TTS_VOICE_LANG.split('-')[0];
-  const loose  = voices.find(v => v.lang.startsWith(prefix));
+  const exact = voices.find(v => v.lang === TTS_VOICE_LANG); if (exact) return exact;
+  const loose = voices.find(v => v.lang.startsWith(TTS_VOICE_LANG.split('-')[0]));
   return loose || voices.find(v => v.default) || voices[0] || null;
 }
 
@@ -228,163 +214,83 @@ function speakTTS(text, onDone) {
   synth.cancel();
   const clean = text.replace(/[\u{1F000}-\u{1FFFF}]/gu,'').replace(/[^\p{L}\p{N}\p{P}\s]/gu,'').trim();
   if (!clean) { onDone(); return; }
-
-  const ttsWrap = document.getElementById('ttsWrap');
-  ttsWrap.style.display = 'block';
+  document.getElementById('ttsWrap').style.display = 'block';
   ttsActive = true;
-
   let finished = false;
   const estimatedMs = Math.max(3000, (clean.length / 13) * 1000 * (1 / TTS_RATE));
-
   function done() {
-    if (finished) return;
-    finished = true;
+    if (finished) return; finished = true;
     clearInterval(keepAlive);
-    ttsWrap.style.display = 'none';
-    ttsActive = false;
-    onDone();
+    document.getElementById('ttsWrap').style.display = 'none';
+    ttsActive = false; onDone();
   }
-
-  const utter  = new SpeechSynthesisUtterance(clean);
-  utter.lang   = TTS_VOICE_LANG; utter.rate = TTS_RATE;
-  utter.pitch  = TTS_PITCH;      utter.volume = TTS_VOLUME;
-  const voice  = getBestVoice();
-  if (voice) utter.voice = voice;
-
-  const keepAlive = setInterval(() => {
-    if (!synth.speaking) { clearInterval(keepAlive); return; }
-    synth.pause(); synth.resume();
-  }, 8000);
-
+  const utter = new SpeechSynthesisUtterance(clean);
+  utter.lang = TTS_VOICE_LANG; utter.rate = TTS_RATE; utter.pitch = TTS_PITCH; utter.volume = TTS_VOLUME;
+  const voice = getBestVoice(); if (voice) utter.voice = voice;
+  const keepAlive = setInterval(() => { if (!synth.speaking) { clearInterval(keepAlive); return; } synth.pause(); synth.resume(); }, 8000);
   const hardCap = setTimeout(done, estimatedMs + 4000);
   utter.onend = utter.onerror = () => { clearTimeout(hardCap); done(); };
   synth.speak(utter);
-
-  setTimeout(() => {
-    if (!synth.speaking && !finished) { clearTimeout(hardCap); setTimeout(done, estimatedMs); }
-  }, 600);
+  setTimeout(() => { if (!synth.speaking && !finished) { clearTimeout(hardCap); setTimeout(done, estimatedMs); } }, 600);
 }
 
 function connect() {
   const ws = new WebSocket(SERVER_URL);
-  ws.onopen  = () => console.log('[overlay] WS connected');
-  ws.onmessage = (e) => {
-    try {
-      const data = JSON.parse(e.data);
-      if (data.type === 'donation') queueDonation(data);
-    } catch(err) { console.error(err); }
-  };
-  ws.onclose = () => { console.log('[overlay] WS closed, reconnecting...'); setTimeout(connect, 3000); };
+  ws.onopen    = () => console.log('[overlay] connected to', SERVER_URL);
+  ws.onmessage = (e) => { try { const d = JSON.parse(e.data); if (d.type==='donation') queueDonation(d); } catch(err){} };
+  ws.onclose   = () => setTimeout(connect, 3000);
 }
 connect();
 
-function queueDonation(data) {
-  alertQueue.push(data);
-  if (!isShowing) processQueue();
-}
-
-function processQueue() {
-  if (isShowing || !alertQueue.length) return;
-  isShowing = true;
-  showAlert(alertQueue.shift());
-}
+function queueDonation(data) { alertQueue.push(data); if (!isShowing) processQueue(); }
+function processQueue() { if (isShowing || !alertQueue.length) return; isShowing = true; showAlert(alertQueue.shift()); }
 
 function showAlert(data) {
-  const card     = document.getElementById('alertCard');
-  const initials = data.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
-
+  const card = document.getElementById('alertCard');
+  const initials = data.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
   document.getElementById('alertAvatar').textContent = initials;
   document.getElementById('alertDonor').textContent  = data.name;
   document.getElementById('alertMsg').textContent    = data.message ? `"${data.message}"` : '';
   document.getElementById('alertAmt').textContent    = `₹${data.amount}`;
-
   const pf = document.getElementById('progressFill');
   pf.style.animation = 'none'; void pf.offsetWidth;
   pf.style.animation = 'drain 11s linear 0.8s forwards';
-
   if (SOUND_URL) { try { new Audio(SOUND_URL).play(); } catch(e){} }
-
-  card.classList.remove('hide');
-  card.classList.add('show');
-  spawnParticles();
-  spawnHearts();
-
-  const ttsText  = TTS_TEMPLATE(data.name, data.amount, data.message || '');
-  const alertStart = Date.now();
-  let hidden = false;
-
+  card.classList.remove('hide'); card.classList.add('show');
+  spawnParticles(); spawnHearts();
+  const alertStart = Date.now(); let hidden = false;
   function hideAlert() {
-    if (hidden) return;
-    hidden = true;
-    synth.cancel();
-    card.classList.remove('show');
-    card.classList.add('hide');
-    setTimeout(() => {
-      card.classList.remove('hide');
-      card.style.transform = '';
-      isShowing = false;
-      processQueue();
-    }, 450);
+    if (hidden) return; hidden = true; synth.cancel();
+    card.classList.remove('show'); card.classList.add('hide');
+    setTimeout(() => { card.classList.remove('hide'); card.style.transform=''; isShowing=false; processQueue(); }, 450);
   }
-
   setTimeout(() => {
-    speakTTS(ttsText, () => {
-      const elapsed   = Date.now() - alertStart;
-      const remaining = Math.max(0, ALERT_DURATION - elapsed);
+    speakTTS(TTS_TEMPLATE(data.name, data.amount, data.message||''), () => {
+      const remaining = Math.max(0, ALERT_DURATION - (Date.now()-alertStart));
       setTimeout(hideAlert, remaining + 500);
     });
   }, 800);
-
   setTimeout(hideAlert, ALERT_DURATION + 20000);
 }
 
-/* Particles */
 const pCanvas = document.getElementById('pCanvas');
 const pCtx    = pCanvas.getContext('2d');
 let pts = [];
-
 function spawnParticles() {
   pts = [];
-  for (let i = 0; i < 40; i++) {
-    pts.push({
-      x: 50 + Math.random()*30, y: 50 + Math.random()*20,
-      vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4,
-      r: 1+Math.random()*3, alpha: 1,
-      color: Math.random()>0.5 ? '#FF2D2D' : '#FFD700'
-    });
-  }
+  for (let i=0;i<40;i++) pts.push({ x:50+Math.random()*30, y:50+Math.random()*20, vx:(Math.random()-0.5)*4, vy:(Math.random()-0.5)*4, r:1+Math.random()*3, alpha:1, color:Math.random()>0.5?'#FF2D2D':'#FFD700' });
   animParticles();
 }
 function animParticles() {
-  pCtx.clearRect(0,0,460,100);
-  pts = pts.filter(p => p.alpha > 0.02);
-  pts.forEach(p => {
-    p.x += p.vx; p.y += p.vy; p.alpha -= 0.025; p.vy += 0.05;
-    pCtx.beginPath(); pCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    pCtx.fillStyle = p.color; pCtx.globalAlpha = p.alpha; pCtx.fill();
-  });
-  pCtx.globalAlpha = 1;
-  if (pts.length > 0) requestAnimationFrame(animParticles);
-  else pCtx.clearRect(0,0,460,100);
+  pCtx.clearRect(0,0,460,90);
+  pts = pts.filter(p=>p.alpha>0.02);
+  pts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.alpha-=0.025; p.vy+=0.05; pCtx.beginPath(); pCtx.arc(p.x,p.y,p.r,0,Math.PI*2); pCtx.fillStyle=p.color; pCtx.globalAlpha=p.alpha; pCtx.fill(); });
+  pCtx.globalAlpha=1;
+  if (pts.length>0) requestAnimationFrame(animParticles); else pCtx.clearRect(0,0,460,90);
 }
-
-/* Floating hearts */
 function spawnHearts() {
-  const wrap   = document.getElementById('alertWrap');
-  const emojis = ['❤️','💛','🔥','⭐','💎'];
-  for (let i = 0; i < 8; i++) {
-    setTimeout(() => {
-      const h = document.createElement('div');
-      h.className = 'heart';
-      h.textContent = emojis[Math.floor(Math.random()*emojis.length)];
-      h.style.left = (30 + Math.random()*400) + 'px';
-      h.style.bottom = '10px';
-      h.style.animationDuration = (1.5+Math.random()) + 's';
-      h.style.animationDelay   = (Math.random()*0.5) + 's';
-      wrap.appendChild(h);
-      h.addEventListener('animationend', () => h.remove());
-    }, i*100);
-  }
+  const wrap=document.getElementById('alertWrap'); const emojis=['❤️','💛','🔥','⭐','💎'];
+  for (let i=0;i<8;i++) setTimeout(()=>{ const h=document.createElement('div'); h.className='heart'; h.textContent=emojis[Math.floor(Math.random()*emojis.length)]; h.style.left=(10+Math.random()*80)+'%'; h.style.bottom='10px'; h.style.animationDuration=(1.5+Math.random())+'s'; h.style.animationDelay=(Math.random()*0.5)+'s'; wrap.appendChild(h); h.addEventListener('animationend',()=>h.remove()); },i*100);
 }
 </script>
 </body>

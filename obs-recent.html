@@ -8,26 +8,24 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
     background: transparent !important;
-    width: 1920px; height: 1080px;
-    overflow: hidden; position: relative;
+    width: 100%; height: 100%;
+    overflow: hidden;
   }
 
-  /* ── Panel — bottom right ── */
   #recentPanel {
-    position: absolute;
-    bottom: 40px; right: 40px;
-    width: 320px;
+    width: 100%;
+    padding: 10px;
     pointer-events: none;
   }
 
   .panel-header {
     display: flex; align-items: center; gap: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
   .panel-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px; letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.5);
+    font-size: 15px; letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.5); white-space: nowrap;
   }
   .panel-title span { color: #FF2D2D; }
   .panel-line {
@@ -35,16 +33,15 @@
     background: linear-gradient(90deg, rgba(255,45,45,0.4), transparent);
   }
 
-  /* ── Donation rows ── */
-  #recentList { display: flex; flex-direction: column; gap: 6px; }
+  #recentList { display: flex; flex-direction: column; gap: 5px; }
 
   .d-row {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 8px;
     background: rgba(8,8,16,0.82);
     border: 1px solid rgba(255,255,255,0.07);
     border-left: 2px solid rgba(255,45,45,0.5);
-    border-radius: 10px;
-    padding: 8px 12px;
+    border-radius: 9px;
+    padding: 7px 10px;
     backdrop-filter: blur(16px);
     animation: rowIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
     position: relative; overflow: hidden;
@@ -56,59 +53,54 @@
     animation: rowShimmer 4s ease-in-out infinite;
   }
   @keyframes rowShimmer { to { left: 120%; } }
-
   .d-row.new-row { border-left-color: #FFD700; }
   .d-row.new-row .d-rank { color: #FFD700; }
 
   @keyframes rowIn {
-    from { transform: translateX(40px); opacity: 0; }
+    from { transform: translateX(30px); opacity: 0; }
     to   { transform: translateX(0);    opacity: 1; }
   }
   @keyframes rowOut {
-    from { transform: translateX(0);    opacity: 1; max-height: 60px; margin-bottom: 6px; }
-    to   { transform: translateX(40px); opacity: 0; max-height: 0;    margin-bottom: 0; }
+    from { transform: translateX(0);    opacity: 1; max-height: 50px; margin-bottom: 5px; }
+    to   { transform: translateX(30px); opacity: 0; max-height: 0;    margin-bottom: 0; }
   }
-  .d-row.leaving { animation: rowOut 0.35s ease forwards; }
+  .d-row.leaving { animation: rowOut 0.3s ease forwards; }
 
   .d-rank {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 13px; color: rgba(255,45,45,0.7);
-    min-width: 18px; text-align: center; flex-shrink: 0;
+    font-size: 12px; color: rgba(255,45,45,0.7);
+    min-width: 16px; text-align: center; flex-shrink: 0;
   }
   .d-avatar {
-    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
     background: linear-gradient(135deg, #FF2D2D, #ff6b6b);
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue', sans-serif; font-size: 12px; color: #fff;
+    font-family: 'Bebas Neue', sans-serif; font-size: 10px; color: #fff;
   }
   .d-info { flex: 1; min-width: 0; }
   .d-name {
     font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 600; color: #fff;
+    font-size: 12px; font-weight: 600; color: #fff;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .d-msg {
-    font-size: 11px; color: rgba(255,255,255,0.4);
+    font-size: 10px; color: rgba(255,255,255,0.4);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    max-width: 170px;
   }
   .d-amount {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px; color: #FFD700;
-    text-shadow: 0 0 12px rgba(255,215,0,0.5);
-    flex-shrink: 0;
+    font-size: 15px; color: #FFD700;
+    text-shadow: 0 0 10px rgba(255,215,0,0.5);
+    flex-shrink: 0; white-space: nowrap;
   }
-
-  /* waiting state */
   .empty-state {
     font-family: 'DM Sans', sans-serif;
-    font-size: 12px; color: rgba(255,255,255,0.2);
-    text-align: center; padding: 12px 0;
+    font-size: 11px; color: rgba(255,255,255,0.2);
+    text-align: center; padding: 10px 0;
   }
 </style>
 </head>
 <body>
-
 <div id="recentPanel">
   <div class="panel-header">
     <div class="panel-title">RECENT <span>DONATIONS</span></div>
@@ -121,20 +113,17 @@
 
 <script>
 const SERVER_URL = location.protocol === 'https:' ? 'wss://' + location.host + '/ws' : 'ws://' + location.host + '/ws';
-
 const MAX_ROWS   = 5;
-let donations    = []; // array of { name, amount, message }
+let donations    = [];
 
 function connect() {
   const ws = new WebSocket(SERVER_URL);
-  ws.onopen    = () => console.log('[recent] WS connected');
+  ws.onopen    = () => console.log('[recent] connected to', SERVER_URL);
   ws.onmessage = (e) => {
-    try {
-      const data = JSON.parse(e.data);
-      if (data.type === 'donation') addDonation(data);
-    } catch(err) {}
+    try { const d = JSON.parse(e.data); if (d.type === 'donation') addDonation(d); } catch(err) {}
   };
-  ws.onclose = () => setTimeout(connect, 3000);
+  ws.onclose = () => { console.log('[recent] reconnecting...'); setTimeout(connect, 3000); };
+  ws.onerror = (e) => console.error('[recent] WS error', e);
 }
 connect();
 
@@ -146,28 +135,23 @@ function addDonation(data) {
 
 function renderList(isNew) {
   const list = document.getElementById('recentList');
-
-  // If first donation, remove empty state
   if (list.querySelector('.empty-state')) list.innerHTML = '';
 
-  // Mark all existing rows as leaving
   if (isNew) {
-    const existing = list.querySelectorAll('.d-row:not(.leaving)');
-    existing.forEach(r => {
+    list.querySelectorAll('.d-row:not(.leaving)').forEach(r => {
       r.classList.add('leaving');
       r.addEventListener('animationend', () => r.remove(), { once: true });
     });
   }
 
-  // Rebuild from donations array
   setTimeout(() => {
     list.innerHTML = '';
     donations.forEach((d, i) => {
       const initials = d.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
-      const row      = document.createElement('div');
-      row.className  = 'd-row' + (i === 0 && isNew ? ' new-row' : '');
-      row.style.animationDelay = (i * 0.07) + 's';
-      row.innerHTML  = `
+      const row = document.createElement('div');
+      row.className = 'd-row' + (i === 0 && isNew ? ' new-row' : '');
+      row.style.animationDelay = (i * 0.06) + 's';
+      row.innerHTML = `
         <div class="d-rank">#${i+1}</div>
         <div class="d-avatar">${initials}</div>
         <div class="d-info">

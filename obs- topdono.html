@@ -8,30 +8,29 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
     background: transparent !important;
-    width: 1920px; height: 1080px;
-    overflow: hidden; position: relative;
+    width: 100%; height: 100%;
+    overflow: hidden;
   }
 
-  /* ── Panel — bottom left ── */
   #topPanel {
-    position: absolute;
-    bottom: 40px; left: 40px;
-    width: 300px;
+    width: 100%;
+    padding: 10px;
     pointer-events: none;
   }
 
   .panel-header {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 8px;
   }
-  .crown-icon { font-size: 18px; animation: crownBob 2s ease-in-out infinite; }
+  .crown-icon { font-size: 16px; animation: crownBob 2s ease-in-out infinite; }
   @keyframes crownBob {
     0%,100% { transform: translateY(0) rotate(-5deg); }
-    50%      { transform: translateY(-4px) rotate(5deg); }
+    50%      { transform: translateY(-3px) rotate(5deg); }
   }
   .panel-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px; letter-spacing: 0.1em; color: rgba(255,255,255,0.5);
+    font-size: 15px; letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.5); white-space: nowrap;
   }
   .panel-title span { color: #FFD700; }
   .panel-line {
@@ -39,20 +38,17 @@
     background: linear-gradient(90deg, rgba(255,215,0,0.4), transparent);
   }
 
-  /* ── Top donor card ── */
   #topCard {
     background: rgba(8,8,16,0.88);
     border: 1px solid rgba(255,215,0,0.3);
-    border-radius: 14px;
-    padding: 14px 16px;
+    border-radius: 12px;
+    padding: 12px 14px;
     backdrop-filter: blur(20px);
     position: relative; overflow: hidden;
-    opacity: 0;
-    transition: opacity 0.5s;
+    opacity: 0; transition: opacity 0.5s;
   }
   #topCard.visible { opacity: 1; }
 
-  /* Gold top glow */
   #topCard::before {
     content: '';
     position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
@@ -60,27 +56,27 @@
     animation: goldGlow 3s ease-in-out infinite;
   }
   @keyframes goldGlow {
-    0%,100% { opacity: 0.4; left: 20%; right: 20%; }
-    50%      { opacity: 1;   left: 5%;  right: 5%; }
+    0%,100% { opacity:0.4; left:20%; right:20%; }
+    50%      { opacity:1;   left:5%;  right:5%; }
   }
-  /* Shimmer */
   #topCard::after {
     content: '';
-    position: absolute; top: 0; left: -80%; width: 60%; height: 100%;
+    position: absolute; top:0; left:-80%; width:60%; height:100%;
     background: linear-gradient(90deg, transparent, rgba(255,215,0,0.05), transparent);
     animation: sweep 4s ease-in-out infinite;
   }
   @keyframes sweep { to { left: 130%; } }
 
-  .top-inner { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
-
+  .top-inner {
+    display: flex; align-items: center; gap: 10px;
+    position: relative; z-index: 1;
+  }
   .top-avatar {
-    width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+    width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
     background: linear-gradient(135deg, #FFD700, #FF8C00);
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: #000;
-    position: relative;
-    box-shadow: 0 0 20px rgba(255,215,0,0.4);
+    font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: #000;
+    position: relative; box-shadow: 0 0 16px rgba(255,215,0,0.4);
   }
   .top-avatar::after {
     content: '';
@@ -94,43 +90,38 @@
   @keyframes rotateBorder { to { transform: rotate(360deg); } }
 
   .top-info { flex: 1; min-width: 0; }
-  .top-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px; letter-spacing: 0.04em; color: #fff;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    text-shadow: 0 0 15px rgba(255,215,0,0.3);
-  }
   .top-label {
-    font-size: 11px; color: rgba(255,255,255,0.35);
+    font-size: 10px; color: rgba(255,255,255,0.35);
     text-transform: uppercase; letter-spacing: 0.08em;
     font-family: 'DM Sans', sans-serif;
   }
+  .top-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; letter-spacing: 0.04em; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-shadow: 0 0 12px rgba(255,215,0,0.3);
+  }
   .top-amount {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px; letter-spacing: 0.04em; color: #FFD700;
-    text-shadow: 0 0 25px rgba(255,215,0,0.8), 0 0 50px rgba(255,215,0,0.3);
-    flex-shrink: 0;
+    font-size: 24px; letter-spacing: 0.04em; color: #FFD700;
+    text-shadow: 0 0 20px rgba(255,215,0,0.8);
+    flex-shrink: 0; white-space: nowrap;
   }
 
-  /* New record flash */
   @keyframes newRecord {
     0%,100% { box-shadow: 0 0 0 0 rgba(255,215,0,0); }
-    50%      { box-shadow: 0 0 0 12px rgba(255,215,0,0.15); }
+    50%      { box-shadow: 0 0 0 10px rgba(255,215,0,0.15); }
   }
-  #topCard.new-record {
-    animation: newRecord 1s ease-in-out 3;
-    border-color: rgba(255,215,0,0.7);
-  }
+  #topCard.new-record { animation: newRecord 1s ease-in-out 3; border-color: rgba(255,215,0,0.7); }
 
   .empty-state {
     font-family: 'DM Sans', sans-serif;
-    font-size: 12px; color: rgba(255,255,255,0.2);
-    text-align: center; padding: 10px 0;
+    font-size: 11px; color: rgba(255,255,255,0.2);
+    text-align: center; padding: 8px 0;
   }
 </style>
 </head>
 <body>
-
 <div id="topPanel">
   <div class="panel-header">
     <div class="crown-icon">👑</div>
@@ -144,27 +135,22 @@
 
 <script>
 const SERVER_URL = location.protocol === 'https:' ? 'wss://' + location.host + '/ws' : 'ws://' + location.host + '/ws';
-
-let topDonor = null; // { name, amount }
+let topDonor = null;
 
 function connect() {
   const ws = new WebSocket(SERVER_URL);
-  ws.onopen    = () => console.log('[topdono] WS connected');
+  ws.onopen    = () => console.log('[topdono] connected to', SERVER_URL);
   ws.onmessage = (e) => {
-    try {
-      const data = JSON.parse(e.data);
-      if (data.type === 'donation') checkTopDonor(data);
-    } catch(err) {}
+    try { const d = JSON.parse(e.data); if (d.type === 'donation') checkTopDonor(d); } catch(err) {}
   };
-  ws.onclose = () => setTimeout(connect, 3000);
+  ws.onclose = () => { console.log('[topdono] reconnecting...'); setTimeout(connect, 3000); };
+  ws.onerror = (e) => console.error('[topdono] WS error', e);
 }
 connect();
 
 function checkTopDonor(data) {
-  const amt     = parseFloat(data.amount);
-  const isNewRecord = !topDonor || amt > parseFloat(topDonor.amount);
-
-  if (isNewRecord) {
+  const amt = parseFloat(data.amount);
+  if (!topDonor || amt > parseFloat(topDonor.amount)) {
     topDonor = { name: data.name, amount: data.amount };
     renderTop(true);
   }
@@ -173,12 +159,9 @@ function checkTopDonor(data) {
 function renderTop(isNewRecord) {
   const card = document.getElementById('topCard');
   if (!topDonor) return;
-
   const initials = topDonor.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
-
   card.classList.remove('new-record');
-  void card.offsetWidth; // reflow to restart animation
-
+  void card.offsetWidth;
   card.innerHTML = `
     <div class="top-inner">
       <div class="top-avatar">${initials}</div>
@@ -188,11 +171,8 @@ function renderTop(isNewRecord) {
       </div>
       <div class="top-amount">₹${topDonor.amount}</div>
     </div>`;
-
   card.classList.add('visible');
-  if (isNewRecord) {
-    setTimeout(() => card.classList.add('new-record'), 100);
-  }
+  if (isNewRecord) setTimeout(() => card.classList.add('new-record'), 100);
 }
 </script>
 </body>
