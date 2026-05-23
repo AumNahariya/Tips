@@ -66,14 +66,10 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', clients: overlayClients.size });
 });
 
-// Serve obs-overlay.html via HTTPS so OBS can load it without file:// restrictions
-app.get('/overlay', (req, res) => {
-  const filePath = path.join(__dirname, 'obs-overlay.html');
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send('obs-overlay.html not found. Make sure it is in the same folder as server.js');
-  }
-  res.sendFile(filePath);
-});
+// Serve overlay files via HTTPS — avoids OBS file:// security restrictions
+app.get('/overlay',        (req, res) => res.sendFile(path.join(__dirname, 'obs-overlay.html')));
+app.get('/overlay/recent', (req, res) => res.sendFile(path.join(__dirname, 'obs-recent.html')));
+app.get('/overlay/top',    (req, res) => res.sendFile(path.join(__dirname, 'obs-topdono.html')));
 
 // Create Razorpay order (called by donation page before checkout)
 app.post('/create-order', async (req, res) => {
