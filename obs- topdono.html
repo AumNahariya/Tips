@@ -143,7 +143,7 @@
 </div>
 
 <script>
-const SERVER_URL = location.protocol === 'https:' ? 'wss://' + location.host : 'ws://' + location.host;
+const SERVER_URL = location.protocol === 'https:' ? 'wss://' + location.host + '/ws' : 'ws://' + location.host + '/ws';
 
 let topDonor = null; // { name, amount }
 

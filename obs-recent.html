@@ -120,7 +120,7 @@
 </div>
 
 <script>
-const SERVER_URL = location.protocol === 'https:' ? 'wss://' + location.host : 'ws://' + location.host;
+const SERVER_URL = location.protocol === 'https:' ? 'wss://' + location.host + '/ws' : 'ws://' + location.host + '/ws';
 
 const MAX_ROWS   = 5;
 let donations    = []; // array of { name, amount, message }

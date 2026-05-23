@@ -23,17 +23,29 @@ const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || 'aumii062
 const app = express();
 const server = http.createServer(app);
 
-// ── WebSocket server (OBS overlay connects here) ──
-const wss = new WebSocketServer({ server });
+// ── WebSocket server — accepts connections on ANY path (/, /overlay, /ws etc) ──
+const wss = new WebSocketServer({ noServer: true });
 let overlayClients = new Set();
+
+// Handle WS upgrade on any path so OBS overlays always connect
+server.on('upgrade', (req, socket, head) => {
+  wss.handleUpgrade(req, socket, head, (ws) => {
+    wss.emit('connection', ws, req);
+  });
+});
 
 wss.on('connection', (ws, req) => {
   overlayClients.add(ws);
-  console.log(`[ws] Overlay connected. Total: ${overlayClients.size}`);
+  console.log(`[ws] Overlay connected from ${req.url}. Total: ${overlayClients.size}`);
 
   ws.on('close', () => {
     overlayClients.delete(ws);
     console.log(`[ws] Overlay disconnected. Total: ${overlayClients.size}`);
+  });
+
+  ws.on('error', (err) => {
+    console.error('[ws] Error:', err.message);
+    overlayClients.delete(ws);
   });
 
   // Send a welcome ping
