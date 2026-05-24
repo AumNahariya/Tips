@@ -211,11 +211,10 @@ function buildSlider() {
   donations.forEach((d, i) => {
     const initials = d.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
     const card = document.createElement('div');
-    // All cards start off-screen right except index 0 which is set in addDonation
     card.className = 'd-card' + (d.isNew ? ' is-new' : '');
     card.id = 'card-' + i;
-    card.style.transform = 'translateX(110%)';
-    card.style.opacity   = '0';
+    // ALL cards start off-screen right — goTo() will move them in/out
+    card.style.cssText = 'transform:translateX(110%); opacity:0; transition:none;';
     card.innerHTML = `
       <div class="d-index">#${i+1}</div>
       <div class="d-avatar">${initials}</div>
@@ -257,35 +256,34 @@ function goTo(newIdx) {
   const newCard = document.getElementById('card-' + newIdx);
   if (!newCard) { isAnimating = false; return; }
 
-  // Exit current card to left
-  if (oldCard) {
-    oldCard.classList.remove('active');
-    oldCard.classList.add('exit-left');
-  }
-
-  // Bring new card in from right
+  // Step 1: position new card off-screen right instantly (no transition)
   newCard.style.transition = 'none';
   newCard.style.transform  = 'translateX(110%)';
-  newCard.style.opacity    = '0';
-  void newCard.offsetWidth;
-  newCard.style.transition = '';
-  newCard.classList.add('active');
+  newCard.style.opacity    = '1';
+  void newCard.offsetWidth; // force reflow
+
+  // Step 2: slide both simultaneously
+  newCard.style.transition = 'transform 0.5s cubic-bezier(0.34,1.2,0.64,1), opacity 0.4s';
+  newCard.style.transform  = 'translateX(0)';
+
+  if (oldCard) {
+    oldCard.style.transition = 'transform 0.5s cubic-bezier(0.34,1.2,0.64,1), opacity 0.4s';
+    oldCard.style.transform  = 'translateX(-110%)';
+    oldCard.style.opacity    = '0';
+  }
 
   currentIdx = newIdx;
   updateDots();
 
   setTimeout(() => {
-    // Reset exited cards back off-screen right
-    document.querySelectorAll('.d-card.exit-left').forEach(c => {
-      c.classList.remove('exit-left', 'active');
-      c.style.transition = 'none';
-      c.style.transform  = 'translateX(110%)';
-      c.style.opacity    = '0';
-      void c.offsetWidth;
-      c.style.transition = '';
-    });
+    // Reset old card back off-screen right for next cycle
+    if (oldCard) {
+      oldCard.style.transition = 'none';
+      oldCard.style.transform  = 'translateX(110%)';
+      oldCard.style.opacity    = '0';
+    }
     isAnimating = false;
-  }, 600);
+  }, 550);
 }
 
 /* ── Auto-advance timer ── */
