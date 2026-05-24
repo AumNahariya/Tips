@@ -138,7 +138,7 @@
 <script>
 // Auto-detect WebSocket — works from any Railway URL path
 const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-const SERVER_URL = proto + '//' + location.host ;
+const SERVER_URL = proto + '//' + location.host + '/ws';
 
 let topDonor = null;
 let wsReady  = false;

@@ -27,9 +27,10 @@ const server = http.createServer(app);
 const wss = new WebSocketServer({ noServer: true });
 let overlayClients = new Set();
 
-// Handle WS upgrade on ANY path — Railway, OBS, all connect to root /
+// Handle WS upgrade on ANY path including /ws
 server.on('upgrade', (req, socket, head) => {
   console.log('[ws] Upgrade request on path:', req.url);
+  // Accept on any path: /, /ws, /overlay, /overlay/recent, /overlay/top
   wss.handleUpgrade(req, socket, head, (ws) => {
     wss.emit('connection', ws, req);
   });
