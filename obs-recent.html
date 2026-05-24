@@ -175,22 +175,47 @@ connect();
 function addDonation(data) {
   donations.unshift({ name: data.name, amount: data.amount, message: data.message || '', isNew: true });
   if (donations.length > MAX_ITEMS) donations = donations.slice(0, MAX_ITEMS);
-  // Always jump to newest (index 0) when a new donation arrives
-  buildSlider();
-  goTo(0, 'new');
-  // Clear isNew flag after a few seconds
   setTimeout(() => { if (donations[0]) donations[0].isNew = false; }, 4000);
+
+  // Reset index and animating state so buildSlider + show always works
+  currentIdx  = 0;
+  isAnimating = false;
+  if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
+
+  buildSlider();
+
+  // Activate card-0 directly after a paint frame
+  requestAnimationFrame(() => {
+    const card = document.getElementById('card-0');
+    if (card) {
+      card.style.transition = 'none';
+      card.style.transform  = 'translateX(0)';
+      card.style.opacity    = '1';
+      card.classList.add('active');
+      void card.offsetWidth;
+      card.style.transition = '';
+    }
+    updateDots();
+    resetTimer();
+  });
 }
 
 /* ── Build slider DOM ── */
 function buildSlider() {
   const win = document.getElementById('sliderWindow');
   win.innerHTML = '';
+  if (donations.length === 0) {
+    win.innerHTML = '<div class="empty-state">Waiting for donations...</div>';
+    buildDots(); return;
+  }
   donations.forEach((d, i) => {
     const initials = d.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
     const card = document.createElement('div');
+    // All cards start off-screen right except index 0 which is set in addDonation
     card.className = 'd-card' + (d.isNew ? ' is-new' : '');
     card.id = 'card-' + i;
+    card.style.transform = 'translateX(110%)';
+    card.style.opacity   = '0';
     card.innerHTML = `
       <div class="d-index">#${i+1}</div>
       <div class="d-avatar">${initials}</div>
@@ -223,41 +248,44 @@ function updateDots() {
 }
 
 /* ── Slide to index ── */
-function goTo(newIdx, direction) {
+function goTo(newIdx) {
   if (isAnimating || donations.length === 0) return;
-  if (newIdx === currentIdx && direction !== 'new') return;
+  if (newIdx === currentIdx) return;
   isAnimating = true;
 
   const oldCard = document.getElementById('card-' + currentIdx);
   const newCard = document.getElementById('card-' + newIdx);
   if (!newCard) { isAnimating = false; return; }
 
-  // Exit old card to left
-  if (oldCard && oldCard !== newCard) {
+  // Exit current card to left
+  if (oldCard) {
     oldCard.classList.remove('active');
     oldCard.classList.add('exit-left');
   }
 
-  // Enter new card from right
-  newCard.style.transform = 'translateX(110%)';
-  newCard.style.opacity   = '0';
+  // Bring new card in from right
+  newCard.style.transition = 'none';
+  newCard.style.transform  = 'translateX(110%)';
+  newCard.style.opacity    = '0';
   void newCard.offsetWidth;
+  newCard.style.transition = '';
   newCard.classList.add('active');
 
   currentIdx = newIdx;
   updateDots();
 
   setTimeout(() => {
-    // Clean up exit-left cards
+    // Reset exited cards back off-screen right
     document.querySelectorAll('.d-card.exit-left').forEach(c => {
-      c.classList.remove('exit-left');
-      c.style.transform = 'translateX(110%)';
-      c.style.opacity   = '0';
+      c.classList.remove('exit-left', 'active');
+      c.style.transition = 'none';
+      c.style.transform  = 'translateX(110%)';
+      c.style.opacity    = '0';
+      void c.offsetWidth;
+      c.style.transition = '';
     });
     isAnimating = false;
   }, 600);
-
-  resetTimer();
 }
 
 /* ── Auto-advance timer ── */
@@ -266,7 +294,7 @@ function resetTimer() {
   if (donations.length <= 1) return;
   slideTimer = setInterval(() => {
     const next = (currentIdx + 1) % donations.length;
-    goTo(next, 'next');
+    goTo(next);
   }, SLIDE_MS);
 }
 
