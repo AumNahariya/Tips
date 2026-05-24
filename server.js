@@ -80,9 +80,24 @@ app.get('/', (req, res) => {
 });
 
 // Serve overlay files via HTTPS — avoids OBS file:// security restrictions
-app.get('/overlay',        (req, res) => res.sendFile(path.join(__dirname, 'obs-overlay.html')));
-app.get('/overlay/recent', (req, res) => res.sendFile(path.join(__dirname, 'obs-recent.html')));
-app.get('/overlay/top',    (req, res) => res.sendFile(path.join(__dirname, 'obs-topdono.html')));
+app.get('/overlay', (req, res) => {
+  const f = path.join(__dirname, 'obs-overlay.html');
+  if (fs.existsSync(f)) return res.sendFile(f);
+  res.status(404).send('obs-overlay.html not found in repo');
+});
+app.get('/overlay/recent', (req, res) => {
+  const f = path.join(__dirname, 'obs-recent.html');
+  if (fs.existsSync(f)) return res.sendFile(f);
+  res.status(404).send('obs-recent.html not found in repo');
+});
+app.get('/overlay/top', (req, res) => {
+  // Try both filename variants
+  const f1 = path.join(__dirname, 'obs-topdono.html');
+  const f2 = path.join(__dirname, 'obs-_topdono.html');
+  if (fs.existsSync(f1)) return res.sendFile(f1);
+  if (fs.existsSync(f2)) return res.sendFile(f2);
+  res.status(404).send('obs-topdono.html not found in repo. Files present: ' + fs.readdirSync(__dirname).join(', '));
+});
 
 // Create Razorpay order (called by donation page before checkout)
 app.post('/create-order', async (req, res) => {
