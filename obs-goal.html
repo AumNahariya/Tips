@@ -2,100 +2,93 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<title>Goal — AUMII</title>
+<title>Donation Goal — AUMII</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="./_overlay-base.css"/>
 <style>
-:root{
-  --red:#FF2D2D;--red-b:rgba(255,45,45,.4);
-  --gold:#FFD700;
-  --surface:rgba(8,8,16,.88);--muted:rgba(255,255,255,.45);
-  --r-md:12px;--r-full:9999px;
-  --spring:cubic-bezier(.34,1.2,.64,1);
+body { width:100%; height:100%; }
+#panel { width:100%; padding:10px; pointer-events:none; }
+.goal-card {
+  background:var(--surface); border:1px solid var(--border-red);
+  border-radius:var(--r-md); padding:12px 14px;
+  backdrop-filter:blur(20px); position:relative; overflow:hidden;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{background:transparent!important;width:100%;height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
-#panel{width:100%;padding:10px;pointer-events:none}
-
-.goal-card{
-  background:var(--surface);border:1px solid var(--red-b);
-  border-radius:var(--r-md);padding:12px 14px;
-  backdrop-filter:blur(20px);position:relative;overflow:hidden;
+.goal-card::before {
+  content:''; position:absolute; top:0; left:10%; right:10%; height:1px;
+  background:linear-gradient(90deg,transparent,var(--red),transparent); opacity:.6;
 }
-.goal-card::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--red),transparent);opacity:.6}
-
-.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.1em;color:var(--muted)}
-.amounts{font-family:'Bebas Neue',sans-serif;font-size:14px;color:#fff;letter-spacing:.04em}
-.amounts b{color:var(--gold);font-weight:400}
-
-.track{height:10px;background:rgba(255,255,255,.07);border-radius:var(--r-full);overflow:hidden;position:relative}
-.fill{height:100%;width:0%;border-radius:var(--r-full);background:linear-gradient(90deg,var(--red),var(--gold));transition:width 1.2s var(--spring);position:relative}
-.fill::after{content:'';position:absolute;top:0;right:0;bottom:0;width:18px;background:rgba(255,255,255,.3);filter:blur(4px);border-radius:var(--r-full)}
-
-.pct{font-family:'Bebas Neue',sans-serif;font-size:11px;color:var(--muted);text-align:center;margin-top:6px;letter-spacing:.06em}
-
-.ws{position:fixed;bottom:8px;right:8px;width:7px;height:7px;border-radius:50%;background:#555;transition:background .3s}
-.ws.ok{background:#00e676}.ws.err{background:var(--red)}
+.goal-header  { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.goal-title   { font-family:var(--font-display); font-size:14px; letter-spacing:.1em; color:var(--muted); }
+.goal-amounts { font-family:var(--font-display); font-size:14px; color:#fff; letter-spacing:.04em; }
+.goal-amounts em { color:var(--gold); font-style:normal; }
+.bar-track  { height:10px; background:rgba(255,255,255,.07); border-radius:var(--r-full); overflow:hidden; position:relative; }
+.bar-fill   {
+  height:100%; width:0%; border-radius:var(--r-full); position:relative;
+  background:linear-gradient(90deg,var(--red),var(--gold));
+  transition:width 1.2s var(--ease-spring);
+}
+.bar-fill::after { content:''; position:absolute; top:0; right:0; bottom:0; width:18px; background:rgba(255,255,255,.3); filter:blur(4px); border-radius:var(--r-full); }
+.goal-pct { font-family:var(--font-display); font-size:11px; color:var(--muted); text-align:center; margin-top:6px; letter-spacing:.06em; }
 </style>
 </head>
 <body>
 <div id="panel">
-  <div class="goal-card">
-    <div class="hdr">
-      <div class="title" id="titleEl">STREAM GOAL 🎯</div>
-      <div class="amounts">₹<b id="curEl">0</b> / ₹<b id="tgtEl">5000</b></div>
+  <div class="goal-card card-glow-edge">
+    <div class="goal-header">
+      <div class="goal-title" id="goalTitle">STREAM GOAL 🎯</div>
+      <div class="goal-amounts">₹<em id="curAmt">0</em> / ₹<em id="tgtAmt">5000</em></div>
     </div>
-    <div class="track"><div class="fill" id="fill"></div></div>
-    <div class="pct" id="pct">0% reached</div>
+    <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    <div class="goal-pct" id="goalPct">0% reached</div>
   </div>
 </div>
-<div class="ws" id="ws"></div>
+<div class="ws-status" id="wsStatus"></div>
 
 <script>
 /*
-  Customise via OBS URL params — no code changes needed:
+  CUSTOMISE VIA OBS URL PARAMS — no code changes needed:
   /overlay/goal?goal=10000&title=Gaming+PC&start=2500
 */
 const WS_URL  = 'wss://tips-production.up.railway.app/ws';
 const params  = new URLSearchParams(location.search);
-let goal      = parseInt(params.get('goal'))  || 5000;
-let title     = params.get('title') || 'Stream Goal 🎯';
+let goalAmt   = parseInt(params.get('goal'))  || 5000;
+let goalTitle = params.get('title') || 'Stream Goal 🎯';
 let current   = parseInt(params.get('start')) || 0;
-const wsDot   = document.getElementById('ws');
 
-document.getElementById('titleEl').textContent = title.toUpperCase();
-document.getElementById('tgtEl').textContent   = goal;
-setBar(current);
+document.getElementById('goalTitle').textContent = goalTitle.toUpperCase();
+document.getElementById('tgtAmt').textContent    = goalAmt;
+updateBar(current);
 
-function setBar(amt) {
+function updateBar(amt) {
   current = Math.max(0, amt);
-  const pct = Math.min(100, Math.round((current / goal) * 100));
-  document.getElementById('curEl').textContent  = current;
-  document.getElementById('fill').style.width   = pct + '%';
-  document.getElementById('pct').textContent    = pct + '% reached' + (pct >= 100 ? ' 🎉 Goal reached!' : '');
+  const pct = Math.min(100, Math.round((current / goalAmt) * 100));
+  document.getElementById('curAmt').textContent  = current;
+  document.getElementById('barFill').style.width = pct + '%';
+  document.getElementById('goalPct').textContent = pct + '% reached' + (pct >= 100 ? ' 🎉 Goal reached!' : '');
 }
 
+const wsStatus = document.getElementById('wsStatus');
 function connect() {
   const ws = new WebSocket(WS_URL);
-  ws.onopen    = () => { wsDot.className='ws ok'; };
+  ws.onopen    = () => { wsStatus.className = 'ws-status ok'; };
   ws.onmessage = (e) => {
     try {
       const d = JSON.parse(e.data);
-      if (d.type==='donation') setBar(current + parseFloat(d.amount));
-      if (d.type==='init' && d.settings?.goal) {
-        const g=d.settings.goal;
-        if (g.currentTotal !== undefined) setBar(g.currentTotal);
-        if (g.amount) { goal=g.amount; document.getElementById('tgtEl').textContent=goal; setBar(current); }
-        if (g.title)  { title=g.title; document.getElementById('titleEl').textContent=title.toUpperCase(); }
+      if (d.type === 'donation') updateBar(current + parseFloat(d.amount));
+      if (d.type === 'init' && d.settings?.goal) {
+        const g = d.settings.goal;
+        if (g.currentTotal) updateBar(g.currentTotal);
+        if (g.amount)       { goalAmt = g.amount; document.getElementById('tgtAmt').textContent = goalAmt; updateBar(current); }
+        if (g.title)        { goalTitle = g.title; document.getElementById('goalTitle').textContent = goalTitle.toUpperCase(); }
       }
-      if (d.type==='settings_update' && d.section==='goal') {
-        if (d.key==='currentTotal') setBar(parseFloat(d.value));
-        if (d.key==='amount')  { goal=parseFloat(d.value); document.getElementById('tgtEl').textContent=goal; setBar(current); }
-        if (d.key==='title')   { title=d.value; document.getElementById('titleEl').textContent=title.toUpperCase(); }
+      if (d.type === 'settings_update' && d.section === 'goal') {
+        if (d.key === 'currentTotal') updateBar(parseFloat(d.value));
+        if (d.key === 'amount')  { goalAmt = parseFloat(d.value); document.getElementById('tgtAmt').textContent = goalAmt; updateBar(current); }
+        if (d.key === 'title')   { goalTitle = d.value; document.getElementById('goalTitle').textContent = goalTitle.toUpperCase(); }
       }
     } catch(_){}
   };
-  ws.onclose = () => { wsDot.className='ws err'; setTimeout(connect,3000); };
+  ws.onclose = () => { wsStatus.className = 'ws-status err'; setTimeout(connect, 3000); };
   ws.onerror  = () => {};
 }
 connect();
