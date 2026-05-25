@@ -91,6 +91,11 @@ app.get('/overlay/recent', (req, res) => {
   if (fs.existsSync(f)) return res.sendFile(f);
   res.status(404).send('obs-recent.html not found in repo');
 });
+app.get('/overlay/goal', (req, res) => {
+  const f = path.join(__dirname, 'obs-goal.html');
+  if (fs.existsSync(f)) return res.sendFile(f);
+  res.status(404).send('obs-goal.html not found');
+});
 app.get('/overlay/top', (req, res) => {
   // Try both filename variants
   const f1 = path.join(__dirname, 'obs-topdono.html');
