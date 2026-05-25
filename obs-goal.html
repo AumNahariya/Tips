@@ -2,190 +2,96 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<title>Donation Goal</title>
+<title>Donation Goal — AUMII</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="./_overlay-base.css"/>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  html, body { background:transparent !important; width:100%; height:100%; overflow:hidden; }
-
-  #wrap { padding:8px; display:inline-block; }
-
-  #pill {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(8,8,16,0.78);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 99px;
-    padding: 7px 16px 7px 12px;
-    position: relative;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  /* shimmer */
-  #pill::after {
-    content:''; position:absolute; top:0; left:-60%; width:40%; height:100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
-    animation: sh 4s ease-in-out infinite;
-  }
-  @keyframes sh { to { left:120%; } }
-
-  /* icon dot */
-  .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #FF2D2D;
-    flex-shrink: 0;
-    animation: pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
-
-  .title-txt {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px; font-weight: 500;
-    color: rgba(255,255,255,0.35);
-    letter-spacing: 0.02em;
-    flex-shrink: 0;
-  }
-
-  /* bar section */
-  .bar-section {
-    display: flex; align-items: center; gap: 7px;
-    flex: 1;
-  }
-  .bar-bg {
-    width: 120px; height: 4px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 99px; overflow: hidden;
-    flex-shrink: 0;
-  }
-  #bar {
-    height: 100%; border-radius: 99px;
-    background: linear-gradient(90deg, #FF2D2D, #FFD700);
-    width: 0%;
-    transition: width 1s cubic-bezier(0.4,0,0.2,1);
-  }
-
-  /* amounts */
-  .amt-txt {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 14px; letter-spacing: 0.04em;
-    color: #fff; flex-shrink: 0;
-  }
-  .sep { color: rgba(255,255,255,0.2); font-size: 11px; flex-shrink:0; }
-  .goal-txt {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 12px; letter-spacing: 0.04em;
-    color: rgba(255,255,255,0.25); flex-shrink: 0;
-  }
-  .pct-txt {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px; font-weight: 500;
-    color: rgba(255,255,255,0.3); flex-shrink: 0;
-  }
-
-  /* completed */
-  #pill.done .dot { background: #00e676; animation: none; }
-  #pill.done #bar { background: linear-gradient(90deg, #00c853, #00e676); }
-  #pill.done .amt-txt { color: #00e676; }
-  #pill.done .pct-txt { color: #00e676; }
-
-  @keyframes flash {
-    0%,100%{border-color:rgba(255,255,255,0.07);}
-    50%{border-color:rgba(0,230,118,0.5);}
-  }
-  #pill.done { animation: flash 1s ease-in-out 4; }
+body { width:100%; height:100%; }
+#panel { width:100%; padding:10px; pointer-events:none; }
+.goal-card {
+  background:var(--surface); border:1px solid var(--border-red);
+  border-radius:var(--r-md); padding:12px 14px;
+  backdrop-filter:blur(20px); position:relative; overflow:hidden;
+}
+.goal-card::before {
+  content:''; position:absolute; top:0; left:10%; right:10%; height:1px;
+  background:linear-gradient(90deg,transparent,var(--red),transparent); opacity:.6;
+}
+.goal-header  { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.goal-title   { font-family:var(--font-display); font-size:14px; letter-spacing:.1em; color:var(--muted); }
+.goal-amounts { font-family:var(--font-display); font-size:14px; color:#fff; letter-spacing:.04em; }
+.goal-amounts em { color:var(--gold); font-style:normal; }
+.bar-track  { height:10px; background:rgba(255,255,255,.07); border-radius:var(--r-full); overflow:hidden; position:relative; }
+.bar-fill   {
+  height:100%; width:0%; border-radius:var(--r-full); position:relative;
+  background:linear-gradient(90deg,var(--red),var(--gold));
+  transition:width 1.2s var(--ease-spring);
+}
+.bar-fill::after { content:''; position:absolute; top:0; right:0; bottom:0; width:18px; background:rgba(255,255,255,.3); filter:blur(4px); border-radius:var(--r-full); }
+.goal-pct { font-family:var(--font-display); font-size:11px; color:var(--muted); text-align:center; margin-top:6px; letter-spacing:.06em; }
 </style>
 </head>
 <body>
-<div id="wrap">
-  <div id="pill">
-    <div class="dot" id="dot"></div>
-    <div class="title-txt" id="titleTxt">Goal</div>
-    <div class="bar-section">
-      <div class="bar-bg"><div id="bar"></div></div>
-      <div class="amt-txt" id="curAmt">₹0</div>
-      <div class="sep">/</div>
-      <div class="goal-txt" id="tgtAmt">₹5K</div>
-      <div class="pct-txt" id="pctTxt">0%</div>
+<div id="panel">
+  <div class="goal-card card-glow-edge">
+    <div class="goal-header">
+      <div class="goal-title" id="goalTitle">STREAM GOAL 🎯</div>
+      <div class="goal-amounts">₹<em id="curAmt">0</em> / ₹<em id="tgtAmt">5000</em></div>
     </div>
+    <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    <div class="goal-pct" id="goalPct">0% reached</div>
   </div>
 </div>
+<div class="ws-status" id="wsStatus"></div>
 
 <script>
+/*
+  CUSTOMISE VIA OBS URL PARAMS — no code changes needed:
+  /overlay/goal?goal=10000&title=Gaming+PC&start=2500
+*/
+const WS_URL  = 'wss://tips-production.up.railway.app/ws';
 const params  = new URLSearchParams(location.search);
-const GOAL    = parseFloat(params.get('goal'))  || 5000;
-const TITLE   = params.get('title')             || 'Goal';
-const COLOR   = params.get('color')             || 'red';
-const START   = parseFloat(params.get('start')) || 0;
+let goalAmt   = parseInt(params.get('goal'))  || 5000;
+let goalTitle = params.get('title') || 'Stream Goal 🎯';
+let current   = parseInt(params.get('start')) || 0;
 
-const COLORS = {
-  red:    'linear-gradient(90deg,#FF2D2D,#FF6B6B)',
-  gold:   'linear-gradient(90deg,#FF8C00,#FFD700)',
-  green:  'linear-gradient(90deg,#00c853,#69f0ae)',
-  blue:   'linear-gradient(90deg,#1565C0,#42A5F5)',
-  purple: 'linear-gradient(90deg,#6A1B9A,#CE93D8)',
-  pink:   'linear-gradient(90deg,#AD1457,#F48FB1)',
-};
+document.getElementById('goalTitle').textContent = goalTitle.toUpperCase();
+document.getElementById('tgtAmt').textContent    = goalAmt;
+updateBar(current);
 
-document.getElementById('bar').style.background = COLORS[COLOR] || COLORS.red;
-document.getElementById('dot').style.background  = COLOR === 'gold' ? '#FFD700' : COLOR === 'blue' ? '#42A5F5' : COLOR === 'purple' ? '#CE93D8' : COLOR === 'pink' ? '#F48FB1' : COLOR === 'green' ? '#00e676' : '#FF2D2D';
-document.getElementById('titleTxt').textContent  = TITLE;
-
-// Format large numbers compactly e.g. 10000 → 10K
-function fmt(n) {
-  if (n >= 100000) return '₹' + Math.round(n/1000) + 'K';
-  if (n >= 10000)  return '₹' + (n/1000).toFixed(1).replace('.0','') + 'K';
-  return '₹' + Math.round(n).toLocaleString('en-IN');
+function updateBar(amt) {
+  current = Math.max(0, amt);
+  const pct = Math.min(100, Math.round((current / goalAmt) * 100));
+  document.getElementById('curAmt').textContent  = current;
+  document.getElementById('barFill').style.width = pct + '%';
+  document.getElementById('goalPct').textContent = pct + '% reached' + (pct >= 100 ? ' 🎉 Goal reached!' : '');
 }
-document.getElementById('tgtAmt').textContent = fmt(GOAL);
 
-const proto      = location.protocol === 'https:' ? 'wss:' : 'ws:';
-const SERVER_URL = proto + '//' + location.host + '/ws';
-let total = START;
-updateUI(false);
-
+const wsStatus = document.getElementById('wsStatus');
 function connect() {
-  const ws = new WebSocket(SERVER_URL);
-  ws.onopen    = () => console.log('[goal] connected');
+  const ws = new WebSocket(WS_URL);
+  ws.onopen    = () => { wsStatus.className = 'ws-status ok'; };
   ws.onmessage = (e) => {
     try {
       const d = JSON.parse(e.data);
-      if (d.type === 'donation') { total = Math.min(total + parseFloat(d.amount), GOAL); updateUI(true); }
-    } catch(e) {}
+      if (d.type === 'donation') updateBar(current + parseFloat(d.amount));
+      if (d.type === 'init' && d.settings?.goal) {
+        const g = d.settings.goal;
+        if (g.currentTotal) updateBar(g.currentTotal);
+        if (g.amount)       { goalAmt = g.amount; document.getElementById('tgtAmt').textContent = goalAmt; updateBar(current); }
+        if (g.title)        { goalTitle = g.title; document.getElementById('goalTitle').textContent = goalTitle.toUpperCase(); }
+      }
+      if (d.type === 'settings_update' && d.section === 'goal') {
+        if (d.key === 'currentTotal') updateBar(parseFloat(d.value));
+        if (d.key === 'amount')  { goalAmt = parseFloat(d.value); document.getElementById('tgtAmt').textContent = goalAmt; updateBar(current); }
+        if (d.key === 'title')   { goalTitle = d.value; document.getElementById('goalTitle').textContent = goalTitle.toUpperCase(); }
+      }
+    } catch(_){}
   };
-  ws.onclose = () => setTimeout(connect, 3000);
-  ws.onerror = () => setTimeout(connect, 3000);
+  ws.onclose = () => { wsStatus.className = 'ws-status err'; setTimeout(connect, 3000); };
+  ws.onerror  = () => {};
 }
 connect();
-
-function updateUI(animate) {
-  const pct  = Math.min((total / GOAL) * 100, 100);
-  document.getElementById('bar').style.width     = pct + '%';
-  document.getElementById('pctTxt').textContent  = Math.round(pct) + '%';
-  if (pct >= 100) document.getElementById('pill').classList.add('done');
-
-  if (animate) {
-    const from = parseFloat(document.getElementById('curAmt').dataset.val || 0);
-    countUp(from, total, 800);
-  } else {
-    document.getElementById('curAmt').textContent = fmt(total);
-    document.getElementById('curAmt').dataset.val = total;
-  }
-}
-
-function countUp(from, to, ms) {
-  const start = performance.now();
-  const el    = document.getElementById('curAmt');
-  function step(now) {
-    const t   = Math.min((now - start) / ms, 1);
-    const val = from + (to - from) * (1 - Math.pow(1-t, 3));
-    el.textContent  = fmt(val);
-    el.dataset.val  = val;
-    if (t < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
 </script>
 </body>
 </html>

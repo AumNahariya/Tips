@@ -2,301 +2,148 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<title>Recent Supporters</title>
+<title>Recent Donations — AUMII</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="./_overlay-base.css"/>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body {
-    background: transparent !important;
-    width: 100%; height: 100%;
-    overflow: hidden;
-  }
+body { width:100%; height:100%; }
+#panel { width:100%; padding:10px; pointer-events:none; }
+.panel-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.panel-title  { font-family:var(--font-display); font-size:15px; letter-spacing:.1em; color:var(--muted); white-space:nowrap; }
+.panel-title span { color:var(--red); }
+.panel-line   { flex:1; height:1px; background:linear-gradient(90deg,var(--border-red),transparent); }
 
-  #recentPanel {
-    width: 100%;
-    padding: 10px;
-    pointer-events: none;
-  }
+#sliderWindow { position:relative; overflow:hidden; border-radius:var(--r-md); height:60px; }
+.d-card {
+  position:absolute; top:0; left:0; right:0; height:60px;
+  display:flex; align-items:center; gap:10px;
+  background:var(--surface); border:1px solid var(--border-dim);
+  border-left:3px solid var(--border-red); border-radius:var(--r-md);
+  padding:8px 12px; backdrop-filter:blur(16px);
+  transform:translateX(110%); opacity:0;
+  transition:transform .5s var(--ease-spring), opacity .4s var(--ease-out);
+}
+.d-card.active { transform:translateX(0); opacity:1; }
+.d-card.exit   { transform:translateX(-110%); opacity:0; }
+.d-card.is-new { border-left-color:var(--gold); }
+.d-rank   { font-family:var(--font-display); font-size:12px; color:rgba(255,45,45,.6); min-width:18px; text-align:center; flex-shrink:0; }
+.d-card.is-new .d-rank { color:var(--gold); }
+.d-avatar {
+  width:28px; height:28px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,var(--red),#ff6b6b);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-size:11px; color:#fff;
+}
+.d-card.is-new .d-avatar { background:linear-gradient(135deg,var(--gold),#FF8C00); color:#000; }
+.d-info  { flex:1; min-width:0; }
+.d-name  { font-size:13px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.d-msg   { font-size:10px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.d-amt   { font-family:var(--font-display); font-size:18px; color:var(--gold); text-shadow:0 0 10px rgba(255,215,0,.4); flex-shrink:0; white-space:nowrap; }
 
-  /* ── Header ── */
-  .panel-header {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 8px;
-  }
-  .panel-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 15px; letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.5); white-space: nowrap;
-  }
-  .panel-title span { color: #FF2D2D; }
-  .panel-line {
-    flex: 1; height: 1px;
-    background: linear-gradient(90deg, rgba(255,45,45,0.4), transparent);
-  }
-
-  /* ── Slider window — only 1 card visible at a time ── */
-  #sliderWindow {
-    position: relative;
-    overflow: hidden;
-    border-radius: 10px;
-    /* Height fits one card — adjust if font size changes */
-    height: 58px;
-  }
-
-  /* ── Single donation card ── */
-  .d-card {
-    position: absolute; top: 0; left: 0; right: 0;
-    display: flex; align-items: center; gap: 8px;
-    background: rgba(8,8,16,0.85);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-left: 3px solid rgba(255,45,45,0.6);
-    border-radius: 10px;
-    padding: 8px 12px;
-    backdrop-filter: blur(16px);
-    height: 58px;
-    /* start off-screen right */
-    transform: translateX(110%);
-    transition: transform 0.55s cubic-bezier(0.34,1.2,0.64,1), opacity 0.4s;
-    opacity: 0;
-  }
-  .d-card.active {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  .d-card.exit-left {
-    transform: translateX(-110%);
-    opacity: 0;
-  }
-
-  /* New donation — gold accent */
-  .d-card.is-new { border-left-color: #FFD700; }
-
-  /* Shimmer */
-  .d-card::after {
-    content: '';
-    position: absolute; top:0; left:-60%; width:40%; height:100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
-    animation: shimmer 3s ease-in-out infinite;
-    border-radius: 10px;
-  }
-  @keyframes shimmer { to { left: 120%; } }
-
-  .d-index {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 12px; color: rgba(255,45,45,0.6);
-    min-width: 18px; text-align: center; flex-shrink: 0;
-  }
-  .d-card.is-new .d-index { color: #FFD700; }
-
-  .d-avatar {
-    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-    background: linear-gradient(135deg, #FF2D2D, #ff6b6b);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue', sans-serif; font-size: 11px; color: #fff;
-  }
-  .d-card.is-new .d-avatar { background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; }
-
-  .d-info { flex: 1; min-width: 0; }
-  .d-name {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 600; color: #fff;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .d-msg {
-    font-size: 10px; color: rgba(255,255,255,0.4);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .d-amount {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px; color: #FFD700;
-    text-shadow: 0 0 10px rgba(255,215,0,0.5);
-    flex-shrink: 0; white-space: nowrap;
-  }
-
-  /* ── Dots indicator ── */
-  #dots {
-    display: flex; justify-content: center; gap: 5px;
-    margin-top: 6px;
-  }
-  .dot {
-    width: 5px; height: 5px; border-radius: 50%;
-    background: rgba(255,255,255,0.15);
-    transition: background 0.3s, transform 0.3s;
-  }
-  .dot.active { background: #FF2D2D; transform: scale(1.3); }
-
-  .empty-state {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px; color: rgba(255,255,255,0.2);
-    text-align: center; padding: 18px 0;
-  }
+#dots     { display:flex; justify-content:center; gap:5px; margin-top:6px; }
+.dot      { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.15); transition:background .3s, transform .3s; }
+.dot.on   { background:var(--red); transform:scale(1.3); }
+.empty    { font-size:11px; color:rgba(255,255,255,.2); text-align:center; padding:18px 0; }
 </style>
 </head>
 <body>
-<div id="recentPanel">
+<div id="panel">
   <div class="panel-header">
-    <div class="panel-title">RECENT <span>SUPPORTERS</span></div>
+    <div class="panel-title">RECENT <span>DONATIONS</span></div>
     <div class="panel-line"></div>
   </div>
-  <div id="sliderWindow">
-    <div class="empty-state"></div>
-  </div>
+  <div id="sliderWindow"><div class="empty">Waiting for donations...</div></div>
   <div id="dots"></div>
 </div>
+<div class="ws-status" id="wsStatus"></div>
 
 <script>
-const proto      = location.protocol === 'https:' ? 'wss:' : 'ws:';
-const SERVER_URL = proto + '//' + location.host + '/ws';
-const MAX_ITEMS  = 5;       // keep last 5 donations
-const SLIDE_MS   = 3500;    // how long each card is shown (ms)
+/* ══════ CONFIG ═════════════ */
+const WS_URL   = 'wss://tips-production.up.railway.app/ws';
+let MAX_ITEMS  = 5;
+let SLIDE_MS   = 3500;
+/* ══════════════════════════ */
 
-let donations    = [];      // newest first
-let currentIdx   = 0;       // which card is active
-let slideTimer   = null;
-let isAnimating  = false;
+let donations = [], cur = 0, timer = null, animating = false;
+const wsStatus = document.getElementById('wsStatus');
 
-/* ── WebSocket ── */
 function connect() {
-  console.log('[recent] connecting to', SERVER_URL);
-  const ws = new WebSocket(SERVER_URL);
-  ws.onopen    = () => console.log('[recent] WS connected');
+  const ws = new WebSocket(WS_URL);
+  ws.onopen    = () => { wsStatus.className = 'ws-status ok'; };
   ws.onmessage = (e) => {
     try {
       const d = JSON.parse(e.data);
-      if (d.type === 'donation') addDonation(d);
-    } catch(err) {}
+      if (d.type === 'donation') push(d);
+      if (d.type === 'init')     { if (d.recent && d.recent.length) { d.recent.forEach(r => donations.push({ ...r, isNew:false })); render(); cur=0; goTo(0,true); resetTimer(); } }
+      if (d.type === 'settings_update' && d.section === 'recent') {
+        if (d.key === 'maxItems') MAX_ITEMS = parseInt(d.value);
+        if (d.key === 'slideMs')  { SLIDE_MS  = parseInt(d.value); resetTimer(); }
+      }
+    } catch(_){}
   };
-  ws.onclose = () => { console.log('[recent] reconnecting...'); setTimeout(connect, 3000); };
-  ws.onerror = (e) => console.error('[recent] WS error', e);
+  ws.onclose = () => { wsStatus.className = 'ws-status err'; setTimeout(connect, 3000); };
+  ws.onerror  = () => {};
 }
 connect();
 
-/* ── Add new donation ── */
-function addDonation(data) {
-  donations.unshift({ name: data.name, amount: data.amount, message: data.message || '', isNew: true });
+function push(d) {
+  donations.unshift({ ...d, isNew: true });
   if (donations.length > MAX_ITEMS) donations = donations.slice(0, MAX_ITEMS);
-  setTimeout(() => { if (donations[0]) donations[0].isNew = false; }, 4000);
-
-  // Reset index and animating state so buildSlider + show always works
-  currentIdx  = 0;
-  isAnimating = false;
-  if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
-
-  buildSlider();
-
-  // Activate card-0 directly after a paint frame
+  setTimeout(() => { if (donations[0]) donations[0].isNew = false; }, 5000);
+  cur = 0; animating = false;
+  clearInterval(timer); timer = null;
+  render();
   requestAnimationFrame(() => {
-    const card = document.getElementById('card-0');
-    if (card) {
-      card.style.transition = 'none';
-      card.style.transform  = 'translateX(0)';
-      card.style.opacity    = '1';
-      card.classList.add('active');
-      void card.offsetWidth;
-      card.style.transition = '';
-    }
-    updateDots();
-    resetTimer();
+    const card = document.getElementById('c0');
+    if (card) { card.style.transition='none'; card.style.transform='translateX(0)'; card.style.opacity='1'; void card.offsetWidth; card.style.transition=''; }
+    updateDots(); resetTimer();
   });
 }
 
-/* ── Build slider DOM ── */
-function buildSlider() {
+function render() {
   const win = document.getElementById('sliderWindow');
   win.innerHTML = '';
-  if (donations.length === 0) {
-    win.innerHTML = '<div class="empty-state">Waiting for donations...</div>';
-    buildDots(); return;
-  }
+  if (!donations.length) { win.innerHTML = '<div class="empty">Waiting for donations...</div>'; buildDots(); return; }
   donations.forEach((d, i) => {
-    const initials = d.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || '?';
-    const card = document.createElement('div');
-    card.className = 'd-card' + (d.isNew ? ' is-new' : '');
-    card.id = 'card-' + i;
-    // ALL cards start off-screen right — goTo() will move them in/out
-    card.style.cssText = 'transform:translateX(110%); opacity:0; transition:none;';
-    card.innerHTML = `
-      <div class="d-index">#${i+1}</div>
-      <div class="d-avatar">${initials}</div>
-      <div class="d-info">
-        <div class="d-name">${d.name}</div>
-        ${d.message ? `<div class="d-msg">"${d.message}"</div>` : ''}
-      </div>
-      <div class="d-amount">₹${d.amount}</div>`;
-    win.appendChild(card);
+    const init = d.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+    const el   = document.createElement('div');
+    el.className = 'd-card' + (d.isNew ? ' is-new' : ''); el.id = 'c'+i;
+    el.style.cssText = 'transform:translateX(110%);opacity:0;transition:none;';
+    el.innerHTML = `<div class="d-rank">#${i+1}</div><div class="d-avatar">${init}</div><div class="d-info"><div class="d-name">${d.name}</div>${d.message?`<div class="d-msg">"${d.message}"</div>`:''}</div><div class="d-amt">₹${d.amount}</div>`;
+    win.appendChild(el);
   });
   buildDots();
 }
 
-/* ── Dots ── */
 function buildDots() {
-  const dotsEl = document.getElementById('dots');
-  dotsEl.innerHTML = '';
-  donations.forEach((_, i) => {
-    const dot = document.createElement('div');
-    dot.className = 'dot' + (i === currentIdx ? ' active' : '');
-    dot.id = 'dot-' + i;
-    dotsEl.appendChild(dot);
-  });
+  const el = document.getElementById('dots'); el.innerHTML = '';
+  donations.forEach((_,i) => { const d=document.createElement('div'); d.className='dot'+(i===cur?' on':''); d.id='d'+i; el.appendChild(d); });
 }
+function updateDots() { document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('on', i===cur)); }
 
-function updateDots() {
-  document.querySelectorAll('.dot').forEach((d, i) => {
-    d.classList.toggle('active', i === currentIdx);
-  });
-}
-
-/* ── Slide to index ── */
-function goTo(newIdx) {
-  if (isAnimating || donations.length === 0) return;
-  if (newIdx === currentIdx) return;
-  isAnimating = true;
-
-  const oldCard = document.getElementById('card-' + currentIdx);
-  const newCard = document.getElementById('card-' + newIdx);
-  if (!newCard) { isAnimating = false; return; }
-
-  // Step 1: position new card off-screen right instantly (no transition)
-  newCard.style.transition = 'none';
-  newCard.style.transform  = 'translateX(110%)';
-  newCard.style.opacity    = '1';
-  void newCard.offsetWidth; // force reflow
-
-  // Step 2: slide both simultaneously
-  newCard.style.transition = 'transform 0.5s cubic-bezier(0.34,1.2,0.64,1), opacity 0.4s';
-  newCard.style.transform  = 'translateX(0)';
-
-  if (oldCard) {
-    oldCard.style.transition = 'transform 0.5s cubic-bezier(0.34,1.2,0.64,1), opacity 0.4s';
-    oldCard.style.transform  = 'translateX(-110%)';
-    oldCard.style.opacity    = '0';
-  }
-
-  currentIdx = newIdx;
-  updateDots();
-
+function goTo(next, instant) {
+  if (animating || !donations.length || next === cur) return;
+  animating = true;
+  const oldC = document.getElementById('c'+cur);
+  const newC = document.getElementById('c'+next);
+  if (!newC) { animating=false; return; }
+  if (instant) { newC.style.transition='none'; newC.style.transform='translateX(0)'; newC.style.opacity='1'; void newC.offsetWidth; newC.style.transition=''; cur=next; updateDots(); animating=false; return; }
+  newC.style.transition = 'none'; newC.style.transform='translateX(110%)'; newC.style.opacity='1'; void newC.offsetWidth;
+  newC.style.transition = 'transform .5s var(--ease-spring),opacity .4s'; newC.style.transform='translateX(0)';
+  if (oldC) { oldC.style.transition='transform .5s var(--ease-spring),opacity .4s'; oldC.style.transform='translateX(-110%)'; oldC.style.opacity='0'; }
+  cur = next; updateDots();
   setTimeout(() => {
-    // Reset old card back off-screen right for next cycle
-    if (oldCard) {
-      oldCard.style.transition = 'none';
-      oldCard.style.transform  = 'translateX(110%)';
-      oldCard.style.opacity    = '0';
-    }
-    isAnimating = false;
+    if (oldC) { oldC.style.transition='none'; oldC.style.transform='translateX(110%)'; oldC.style.opacity='0'; }
+    animating = false;
   }, 550);
 }
 
-/* ── Auto-advance timer ── */
 function resetTimer() {
-  if (slideTimer) clearInterval(slideTimer);
+  if (timer) clearInterval(timer);
   if (donations.length <= 1) return;
-  slideTimer = setInterval(() => {
-    const next = (currentIdx + 1) % donations.length;
-    goTo(next);
-  }, SLIDE_MS);
+  timer = setInterval(() => goTo((cur+1)%donations.length, false), SLIDE_MS);
 }
 
-/* ── Init ── */
 buildDots();
 </script>
 </body>
