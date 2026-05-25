@@ -2,105 +2,108 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<title>Top Donation — AUMII</title>
+<title>Top Donor — AUMII</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="./_overlay-base.css"/>
 <style>
-body { width:100%; height:100%; }
-#panel { width:100%; padding:10px; pointer-events:none; }
-.panel-header { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
-.crown { font-size:16px; animation:crownBob 2s ease-in-out infinite; }
-@keyframes crownBob { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-4px) rotate(5deg)} }
-.panel-title { font-family:var(--font-display); font-size:15px; letter-spacing:.1em; color:var(--muted); }
-.panel-title span { color:var(--gold); }
-.panel-line  { flex:1; height:1px; background:linear-gradient(90deg,var(--border-gold),transparent); }
-
-#topCard {
-  background:var(--surface); border:1px solid var(--border-gold);
-  border-radius:var(--r-md); padding:12px 14px;
-  backdrop-filter:blur(20px); position:relative; overflow:hidden;
-  opacity:0; transform:translateY(-8px); transition:opacity .5s,transform .5s;
+:root{
+  --gold:#FFD700;--gold-glow:rgba(255,215,0,.7);--gold-b:rgba(255,215,0,.35);
+  --surface:rgba(8,8,16,.88);--muted:rgba(255,255,255,.45);
+  --r-md:12px;--r-full:9999px;
 }
-#topCard.visible { opacity:1; transform:translateY(0); }
-#topCard::before {
-  content:''; position:absolute; top:0; left:10%; right:10%; height:1px;
-  background:linear-gradient(90deg,transparent,var(--gold),transparent);
-  animation:glowEdgeGold 3s ease-in-out infinite;
-}
-@keyframes glowEdgeGold { 0%,100%{opacity:.4;left:20%;right:20%} 50%{opacity:1;left:5%;right:5%} }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{background:transparent!important;width:100%;height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
+#panel{width:100%;padding:10px;pointer-events:none}
+.hdr{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.crown{font-size:16px;animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-4px) rotate(5deg)}}
+.hdr-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:.1em;color:var(--muted)}
+.hdr-title b{color:var(--gold)}
+.hdr-line{flex:1;height:1px;background:linear-gradient(90deg,var(--gold-b),transparent)}
 
-.top-inner   { display:flex; align-items:center; gap:10px; position:relative; z-index:1; }
-.top-avatar  {
-  width:42px; height:42px; border-radius:50%; flex-shrink:0;
+#card{
+  background:var(--surface);border:1px solid var(--gold-b);
+  border-radius:var(--r-md);padding:12px 14px;
+  backdrop-filter:blur(20px);position:relative;overflow:hidden;
+  opacity:0;transform:translateY(-8px);transition:opacity .5s,transform .5s;
+}
+#card.visible{opacity:1;transform:translateY(0)}
+#card::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);animation:glow 3s ease-in-out infinite}
+@keyframes glow{0%,100%{opacity:.4;left:20%;right:20%}50%{opacity:1;left:5%;right:5%}}
+
+.inner{display:flex;align-items:center;gap:10px;position:relative;z-index:1}
+.av{
+  width:42px;height:42px;border-radius:50%;flex-shrink:0;
   background:linear-gradient(135deg,var(--gold),#FF8C00);
-  display:flex; align-items:center; justify-content:center;
-  font-family:var(--font-display); font-size:16px; color:#000;
-  position:relative; box-shadow:0 0 16px rgba(255,215,0,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:16px;color:#000;
+  position:relative;box-shadow:0 0 16px rgba(255,215,0,.4);
 }
-.top-avatar::after {
-  content:''; position:absolute; inset:-3px; border-radius:50%;
+.av::after{
+  content:'';position:absolute;inset:-3px;border-radius:50%;
   border:2px solid transparent;
   background:conic-gradient(var(--gold),transparent 50%,var(--gold)) border-box;
   -webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);
-  -webkit-mask-composite:destination-out; mask-composite:exclude;
+  -webkit-mask-composite:destination-out;mask-composite:exclude;
   animation:spin 2s linear infinite;
 }
-.top-info  { flex:1; min-width:0; }
-.top-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
-.top-name  { font-family:var(--font-display); font-size:18px; letter-spacing:.04em; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:0 0 12px rgba(255,215,0,.3); }
-.top-amt   { font-family:var(--font-display); font-size:24px; color:var(--gold); text-shadow:0 0 20px var(--gold-glow); white-space:nowrap; flex-shrink:0; }
-
-@keyframes newRecord { 0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,0)} 50%{box-shadow:0 0 0 12px rgba(255,215,0,.15)} }
-#topCard.new-record { animation:newRecord .9s ease-in-out 5; border-color:rgba(255,215,0,.8); }
-.empty { font-size:11px; color:rgba(255,255,255,.2); text-align:center; padding:8px 0; }
+@keyframes spin{to{transform:rotate(360deg)}}
+.info{flex:1;min-width:0}
+.lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.04em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 12px rgba(255,215,0,.3)}
+.amt{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold);text-shadow:0 0 20px var(--gold-glow);white-space:nowrap;flex-shrink:0}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,215,0,0)}50%{box-shadow:0 0 0 12px rgba(255,215,0,.15)}}
+#card.record{animation:pulse .9s ease-in-out 5;border-color:rgba(255,215,0,.8)}
+.empty{font-size:11px;color:rgba(255,255,255,.2);text-align:center;padding:8px 0}
+.ws{position:fixed;bottom:8px;right:8px;width:7px;height:7px;border-radius:50%;background:#555;transition:background .3s}
+.ws.ok{background:#00e676}.ws.err{background:#FF2D2D}
 </style>
 </head>
 <body>
 <div id="panel">
-  <div class="panel-header">
+  <div class="hdr">
     <div class="crown">👑</div>
-    <div class="panel-title">TOP <span>DONATION</span></div>
-    <div class="panel-line"></div>
+    <div class="hdr-title">TOP <b>DONATION</b></div>
+    <div class="hdr-line"></div>
   </div>
-  <div id="topCard"><div class="empty">Waiting for donations...</div></div>
+  <div id="card"><div class="empty">Waiting for donations...</div></div>
 </div>
-<div class="ws-status" id="wsStatus"></div>
+<div class="ws" id="ws"></div>
 
 <script>
 const WS_URL = 'wss://tips-production.up.railway.app/ws';
 let top = null;
-const wsStatus = document.getElementById('wsStatus');
+const wsDot = document.getElementById('ws');
 
 function connect() {
   const ws = new WebSocket(WS_URL);
-  ws.onopen    = () => { wsStatus.className = 'ws-status ok'; };
+  ws.onopen    = () => { wsDot.className='ws ok'; };
   ws.onmessage = (e) => {
     try {
       const d = JSON.parse(e.data);
-      if (d.type === 'donation')         check(d);
-      if (d.type === 'init' && d.topDonation) { top = d.topDonation; render(false); }
+      if (d.type==='donation') check(d);
+      if (d.type==='init' && d.topDonation) { top=d.topDonation; render(false); }
     } catch(_){}
   };
-  ws.onclose = () => { wsStatus.className = 'ws-status err'; setTimeout(connect,3000); };
+  ws.onclose = () => { wsDot.className='ws err'; setTimeout(connect,3000); };
   ws.onerror  = () => {};
 }
 connect();
 
 function check(d) {
   const amt = parseFloat(d.amount);
-  if (!top || amt > parseFloat(top.amount)) { top = { name:d.name, amount:d.amount }; render(true); }
+  if (!top || amt > parseFloat(top.amount)) { top={name:d.name,amount:d.amount}; render(true); }
 }
 
 function render(isNew) {
   if (!top) return;
-  const card = document.getElementById('topCard');
-  const init = top.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
-  card.classList.remove('visible','new-record'); void card.offsetWidth;
-  setTimeout(() => {
-    card.innerHTML = `<div class="top-inner"><div class="top-avatar">${init}</div><div class="top-info"><div class="top-label">Top Supporter 👑</div><div class="top-name">${top.name}</div></div><div class="top-amt">₹${top.amount}</div></div>`;
+  const card = document.getElementById('card');
+  const ini  = top.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+  card.classList.remove('visible','record'); void card.offsetWidth;
+  setTimeout(()=>{
+    card.innerHTML=`<div class="inner"><div class="av">${ini}</div><div class="info"><div class="lbl">Top Supporter 👑</div><div class="name">${top.name}</div></div><div class="amt">₹${top.amount}</div></div>`;
     card.classList.add('visible');
-    if (isNew) setTimeout(() => card.classList.add('new-record'), 100);
-  }, 280);
+    if(isNew) setTimeout(()=>card.classList.add('record'),100);
+  },280);
 }
 </script>
 </body>
