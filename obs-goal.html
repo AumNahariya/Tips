@@ -8,83 +8,116 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { background:transparent !important; width:100%; height:100%; overflow:hidden; }
 
-  #panel { width:100%; padding:10px; pointer-events:none; }
+  #wrap { padding:8px; display:inline-block; }
 
-  #card {
-    background: rgba(8,8,16,0.82);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
-    padding: 12px 14px;
-    position: relative; overflow: hidden;
-    transition: border-color 0.5s;
+  #pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(8,8,16,0.78);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 99px;
+    padding: 7px 16px 7px 12px;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
   }
-  #card::before {
-    content:''; position:absolute; top:0; left:0; right:0; height:1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+
+  /* shimmer */
+  #pill::after {
+    content:''; position:absolute; top:0; left:-60%; width:40%; height:100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+    animation: sh 4s ease-in-out infinite;
+  }
+  @keyframes sh { to { left:120%; } }
+
+  /* icon dot */
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #FF2D2D;
+    flex-shrink: 0;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+  .title-txt {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 500;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
   }
 
-  .row1 { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
-  .lbl { font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:0.12em; color:rgba(255,255,255,0.35); }
-  .lbl span { color:rgba(255,255,255,0.6); }
-  .amounts { display:flex; align-items:baseline; gap:3px; }
-  #curAmt { font-family:'Bebas Neue',sans-serif; font-size:21px; color:#fff; letter-spacing:0.04em; transition:color 0.4s; }
-  .sep { font-family:'DM Sans',sans-serif; font-size:11px; color:rgba(255,255,255,0.2); }
-  #tgtAmt { font-family:'Bebas Neue',sans-serif; font-size:13px; color:rgba(255,255,255,0.25); letter-spacing:0.04em; }
+  /* bar section */
+  .bar-section {
+    display: flex; align-items: center; gap: 7px;
+    flex: 1;
+  }
+  .bar-bg {
+    width: 120px; height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 99px; overflow: hidden;
+    flex-shrink: 0;
+  }
+  #bar {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, #FF2D2D, #FFD700);
+    width: 0%;
+    transition: width 1s cubic-bezier(0.4,0,0.2,1);
+  }
 
-  .bar-bg { height:5px; background:rgba(255,255,255,0.06); border-radius:99px; overflow:hidden; margin-bottom:7px; }
-  #bar { height:100%; border-radius:99px; background:linear-gradient(90deg,#FF2D2D,#FFD700); width:0%; transition:width 1s cubic-bezier(0.4,0,0.2,1); }
+  /* amounts */
+  .amt-txt {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px; letter-spacing: 0.04em;
+    color: #fff; flex-shrink: 0;
+  }
+  .sep { color: rgba(255,255,255,0.2); font-size: 11px; flex-shrink:0; }
+  .goal-txt {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 12px; letter-spacing: 0.04em;
+    color: rgba(255,255,255,0.25); flex-shrink: 0;
+  }
+  .pct-txt {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 500;
+    color: rgba(255,255,255,0.3); flex-shrink: 0;
+  }
 
-  .row3 { display:flex; align-items:center; justify-content:space-between; }
-  #pct { font-family:'Bebas Neue',sans-serif; font-size:11px; letter-spacing:0.08em; color:rgba(255,255,255,0.25); transition:color 0.4s; }
-  #title { font-family:'DM Sans',sans-serif; font-size:11px; color:rgba(255,255,255,0.2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
+  /* completed */
+  #pill.done .dot { background: #00e676; animation: none; }
+  #pill.done #bar { background: linear-gradient(90deg, #00c853, #00e676); }
+  #pill.done .amt-txt { color: #00e676; }
+  #pill.done .pct-txt { color: #00e676; }
 
-  #card.done { border-color:rgba(0,230,118,0.3); }
-  #card.done #bar { background:linear-gradient(90deg,#00c853,#00e676); }
-  #card.done #curAmt { color:#00e676; }
-  #card.done #pct { color:#00e676; }
-
-  @keyframes flash { 0%,100%{border-color:rgba(0,230,118,0.3);} 50%{border-color:rgba(0,230,118,0.7);} }
-  #card.done { animation:flash 1.2s ease-in-out 4; }
+  @keyframes flash {
+    0%,100%{border-color:rgba(255,255,255,0.07);}
+    50%{border-color:rgba(0,230,118,0.5);}
+  }
+  #pill.done { animation: flash 1s ease-in-out 4; }
 </style>
 </head>
 <body>
-<div id="panel">
-  <div id="card">
-    <div class="row1">
-      <div class="lbl">DONATION <span id="lblSpan">GOAL</span></div>
-      <div class="amounts">
-        <div id="curAmt">₹0</div>
-        <div class="sep">/</div>
-        <div id="tgtAmt">₹5,000</div>
-      </div>
-    </div>
-    <div class="bar-bg"><div id="bar"></div></div>
-    <div class="row3">
-      <div id="pct">0%</div>
-      <div id="title">Stream Goal</div>
+<div id="wrap">
+  <div id="pill">
+    <div class="dot" id="dot"></div>
+    <div class="title-txt" id="titleTxt">Goal</div>
+    <div class="bar-section">
+      <div class="bar-bg"><div id="bar"></div></div>
+      <div class="amt-txt" id="curAmt">₹0</div>
+      <div class="sep">/</div>
+      <div class="goal-txt" id="tgtAmt">₹5K</div>
+      <div class="pct-txt" id="pctTxt">0%</div>
     </div>
   </div>
 </div>
 
 <script>
-/* ═══════════════════════════════════════════
-   CUSTOMIZATION — edit URL parameters in OBS
-   URL example:
-   https://your-railway-url/overlay/goal?goal=10000&title=New+Mic+Fund&color=purple&start=500
-
-   Parameters:
-   goal   = target amount in ₹         (default: 5000)
-   title  = label shown bottom right   (default: Stream Goal)
-   color  = bar color theme            (default: red)
-            options: red | gold | green | blue | purple | pink
-   start  = starting amount already raised (default: 0)
-═══════════════════════════════════════════ */
-
-const params     = new URLSearchParams(location.search);
-const GOAL       = parseFloat(params.get('goal'))  || 5000;
-const TITLE      = params.get('title')             || 'Stream Goal';
-const COLOR      = params.get('color')             || 'red';
-const START      = parseFloat(params.get('start')) || 0;
+const params  = new URLSearchParams(location.search);
+const GOAL    = parseFloat(params.get('goal'))  || 5000;
+const TITLE   = params.get('title')             || 'Goal';
+const COLOR   = params.get('color')             || 'red';
+const START   = parseFloat(params.get('start')) || 0;
 
 const COLORS = {
   red:    'linear-gradient(90deg,#FF2D2D,#FF6B6B)',
@@ -95,13 +128,20 @@ const COLORS = {
   pink:   'linear-gradient(90deg,#AD1457,#F48FB1)',
 };
 
-document.getElementById('bar').style.background   = COLORS[COLOR] || COLORS.red;
-document.getElementById('tgtAmt').textContent      = '₹' + GOAL.toLocaleString('en-IN');
-document.getElementById('title').textContent       = TITLE;
+document.getElementById('bar').style.background = COLORS[COLOR] || COLORS.red;
+document.getElementById('dot').style.background  = COLOR === 'gold' ? '#FFD700' : COLOR === 'blue' ? '#42A5F5' : COLOR === 'purple' ? '#CE93D8' : COLOR === 'pink' ? '#F48FB1' : COLOR === 'green' ? '#00e676' : '#FF2D2D';
+document.getElementById('titleTxt').textContent  = TITLE;
+
+// Format large numbers compactly e.g. 10000 → 10K
+function fmt(n) {
+  if (n >= 100000) return '₹' + Math.round(n/1000) + 'K';
+  if (n >= 10000)  return '₹' + (n/1000).toFixed(1).replace('.0','') + 'K';
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+document.getElementById('tgtAmt').textContent = fmt(GOAL);
 
 const proto      = location.protocol === 'https:' ? 'wss:' : 'ws:';
 const SERVER_URL = proto + '//' + location.host + '/ws';
-
 let total = START;
 updateUI(false);
 
@@ -109,7 +149,10 @@ function connect() {
   const ws = new WebSocket(SERVER_URL);
   ws.onopen    = () => console.log('[goal] connected');
   ws.onmessage = (e) => {
-    try { const d = JSON.parse(e.data); if (d.type==='donation') { total = Math.min(total + parseFloat(d.amount), GOAL); updateUI(true); } } catch(err) {}
+    try {
+      const d = JSON.parse(e.data);
+      if (d.type === 'donation') { total = Math.min(total + parseFloat(d.amount), GOAL); updateUI(true); }
+    } catch(e) {}
   };
   ws.onclose = () => setTimeout(connect, 3000);
   ws.onerror = () => setTimeout(connect, 3000);
@@ -118,21 +161,17 @@ connect();
 
 function updateUI(animate) {
   const pct  = Math.min((total / GOAL) * 100, 100);
-  const bar  = document.getElementById('bar');
-  const card = document.getElementById('card');
-
-  bar.style.width = pct + '%';
-  document.getElementById('pct').textContent = Math.round(pct) + '%';
+  document.getElementById('bar').style.width     = pct + '%';
+  document.getElementById('pctTxt').textContent  = Math.round(pct) + '%';
+  if (pct >= 100) document.getElementById('pill').classList.add('done');
 
   if (animate) {
     const from = parseFloat(document.getElementById('curAmt').dataset.val || 0);
     countUp(from, total, 800);
   } else {
-    document.getElementById('curAmt').textContent  = '₹' + Math.round(total).toLocaleString('en-IN');
-    document.getElementById('curAmt').dataset.val  = total;
+    document.getElementById('curAmt').textContent = fmt(total);
+    document.getElementById('curAmt').dataset.val = total;
   }
-
-  if (pct >= 100) card.classList.add('done');
 }
 
 function countUp(from, to, ms) {
@@ -140,8 +179,8 @@ function countUp(from, to, ms) {
   const el    = document.getElementById('curAmt');
   function step(now) {
     const t   = Math.min((now - start) / ms, 1);
-    const val = from + (to - from) * (1 - Math.pow(1 - t, 3));
-    el.textContent  = '₹' + Math.round(val).toLocaleString('en-IN');
+    const val = from + (to - from) * (1 - Math.pow(1-t, 3));
+    el.textContent  = fmt(val);
     el.dataset.val  = val;
     if (t < 1) requestAnimationFrame(step);
   }
