@@ -2,548 +2,507 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Overlay Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --bg: #0a0a0f; --surface: rgba(255,255,255,0.04); --surface2: rgba(255,255,255,0.07);
-  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
-  --text: #f0f0f0; --muted: rgba(255,255,255,0.4); --hint: rgba(255,255,255,0.2);
-  --red: #FF2D2D; --gold: #FFD700; --green: #00e676;
-  --radius: 12px; --radius-sm: 8px;
+  --bg:#0a0a0f; --s1:rgba(255,255,255,0.04); --s2:rgba(255,255,255,0.07);
+  --b1:rgba(255,255,255,0.08); --b2:rgba(255,255,255,0.14);
+  --text:#f0f0f0; --muted:rgba(255,255,255,0.4); --hint:rgba(255,255,255,0.18);
+  --red:#FF2D2D; --gold:#FFD700; --green:#00e676; --blue:#42A5F5;
+  --r:12px; --rs:8px;
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-/* ── Login ── */
-#loginScreen {
-  min-height: 100vh; display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 1.5rem;
-}
-.login-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 2rem; width: 320px; text-align: center;
-}
-.login-card h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
-.login-card p { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; }
-.login-card input {
-  width: 100%; padding: 10px 14px; background: var(--surface2);
-  border: 1px solid var(--border); border-radius: var(--radius-sm);
-  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
-  outline: none; margin-bottom: 10px;
-}
-.login-card input:focus { border-color: var(--red); }
-.btn-primary {
-  width: 100%; padding: 11px; background: var(--red); border: none;
-  border-radius: var(--radius-sm); color: #fff; font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px; letter-spacing: 0.06em; cursor: pointer; transition: opacity 0.2s;
-}
-.btn-primary:hover { opacity: 0.88; }
-.error-msg { font-size: 12px; color: #ff6b6b; margin-top: 8px; display: none; }
+/* Login */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.lcard{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:2rem;width:320px;text-align:center;}
+.lcard h1{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.06em;margin-bottom:.4rem;}
+.lcard p{font-size:13px;color:var(--muted);margin-bottom:1.5rem;}
+.lcard input{width:100%;padding:10px 14px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:10px;}
+.lcard input:focus{border-color:var(--red);}
+.btn-p{width:100%;padding:11px;background:var(--red);border:none;border-radius:var(--rs);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.06em;cursor:pointer;transition:opacity .2s;}
+.btn-p:hover{opacity:.88;}
+.err{font-size:12px;color:#ff6b6b;margin-top:8px;display:none;}
 
-/* ── Main layout ── */
-#app { display: none; }
-.topbar {
-  border-bottom: 1px solid var(--border);
-  padding: 0 2rem; height: 56px;
-  display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; background: var(--bg); z-index: 10;
-}
-.topbar-left { display: flex; align-items: center; gap: 12px; }
-.topbar-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.06em; }
-.status-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--green);
-  animation: blink 2s ease-in-out infinite;
-}
-.status-dot.off { background: #ff4444; animation: none; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-.clients-badge {
-  font-size: 12px; color: var(--muted); background: var(--surface2);
-  border: 1px solid var(--border); border-radius: 99px; padding: 2px 10px;
-}
-.btn-logout {
-  font-size: 12px; color: var(--muted); background: transparent;
-  border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 5px 12px; cursor: pointer;
-}
-.btn-logout:hover { color: var(--text); border-color: var(--border2); }
+/* App */
+#app{display:none;}
+.topbar{border-bottom:1px solid var(--b1);padding:0 1.5rem;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10;}
+.tb-left{display:flex;align-items:center;gap:10px;}
+.tb-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.06em;}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:bl 2s ease-in-out infinite;}
+.sdot.off{background:#ff4444;animation:none;}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+.cbadge{font-size:11px;color:var(--muted);background:var(--s2);border:1px solid var(--b1);border-radius:99px;padding:2px 9px;}
+.btn-out{font-size:12px;color:var(--muted);background:transparent;border:1px solid var(--b1);border-radius:var(--rs);padding:5px 12px;cursor:pointer;}
+.btn-out:hover{color:var(--text);}
 
-.content { padding: 2rem; max-width: 900px; margin: 0 auto; }
+/* Tabs */
+.tabs{display:flex;gap:4px;padding:1rem 1.5rem .5rem;border-bottom:1px solid var(--b1);overflow-x:auto;}
+.tab{padding:7px 16px;border-radius:var(--rs);border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .2s;}
+.tab:hover{background:var(--s2);color:var(--text);}
+.tab.active{background:var(--s2);color:var(--text);border:1px solid var(--b2);}
 
-/* ── Section cards ── */
-.section {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); margin-bottom: 1.5rem; overflow: hidden;
-}
-.section-head {
-  padding: 14px 20px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.section-title {
-  font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 0.08em;
-  display: flex; align-items: center; gap: 8px;
-}
-.section-badge {
-  font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
-  padding: 2px 8px; border-radius: 99px; letter-spacing: 0;
-}
-.badge-red { background: rgba(255,45,45,0.15); color: #ff6b6b; }
-.badge-gold { background: rgba(255,215,0,0.12); color: #FFD700; }
-.badge-green { background: rgba(0,230,118,0.12); color: #00e676; }
-.badge-blue { background: rgba(66,165,245,0.15); color: #42A5F5; }
-.section-body { padding: 18px 20px; display: grid; gap: 14px; }
+/* Panels */
+.content{padding:1.5rem;max-width:800px;margin:0 auto;}
+.panel{display:none;}
+.panel.active{display:flex;flex-direction:column;gap:1rem;}
 
-/* ── Fields ── */
-.field { display: flex; flex-direction: column; gap: 5px; }
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-label { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: 0.04em; }
+/* Cards */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;}
+.card-head{padding:12px 18px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.08em;display:flex;align-items:center;gap:8px;}
+.badge{font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;letter-spacing:0;}
+.br{background:rgba(255,45,45,.15);color:#ff6b6b;}
+.bg{background:rgba(255,215,0,.12);color:#FFD700;}
+.bb{background:rgba(0,230,118,.12);color:#00e676;}
+.bbl{background:rgba(66,165,245,.15);color:#42A5F5;}
+.bp{background:rgba(206,147,216,.15);color:#CE93D8;}
+.card-body{padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
 
-input[type=text], input[type=number], select {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text);
-  font-family: 'DM Sans', sans-serif; font-size: 14px;
-  padding: 9px 12px; outline: none; width: 100%;
-  transition: border-color 0.2s;
-}
-input[type=text]:focus, input[type=number]:focus, select:focus { border-color: var(--red); }
-select option { background: #1a1a2e; }
+/* Fields */
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.field{display:flex;flex-direction:column;gap:5px;}
+label{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.04em;text-transform:uppercase;}
+input[type=text],input[type=number],select{background:var(--s2);border:1px solid var(--b1);border-radius:var(--rs);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;outline:none;width:100%;transition:border-color .2s;}
+input[type=text]:focus,input[type=number]:focus,select:focus{border-color:var(--red);}
+select option{background:#1a1a2e;}
 
-/* toggle */
-.toggle-row { display: flex; align-items: center; justify-content: space-between; }
-.toggle-label { font-size: 13px; color: var(--text); }
-.toggle {
-  position: relative; width: 38px; height: 22px;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 99px; cursor: pointer; transition: background 0.2s;
-}
-.toggle.on { background: var(--red); border-color: var(--red); }
-.toggle::after {
-  content: ''; position: absolute; top: 2px; left: 2px;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: rgba(255,255,255,0.5); transition: transform 0.2s, background 0.2s;
-}
-.toggle.on::after { transform: translateX(16px); background: #fff; }
+/* Toggle */
+.trow{display:flex;align-items:center;justify-content:space-between;}
+.tlabel{font-size:13px;color:var(--text);}
+.tog{position:relative;width:36px;height:20px;background:var(--s2);border:1px solid var(--b1);border-radius:99px;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.tog.on{background:var(--red);border-color:var(--red);}
+.tog::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.4);transition:transform .2s,background .2s;}
+.tog.on::after{transform:translateX(16px);background:#fff;}
 
-/* range */
-.range-wrap { display: flex; align-items: center; gap: 10px; }
-input[type=range] {
-  flex: 1; accent-color: var(--red); height: 4px; cursor: pointer;
-}
-.range-val {
-  font-size: 13px; color: var(--text); min-width: 36px; text-align: right;
-}
+/* Range */
+.rrow{display:flex;align-items:center;gap:8px;}
+input[type=range]{flex:1;accent-color:var(--red);cursor:pointer;}
+.rval{font-size:12px;color:var(--text);min-width:38px;text-align:right;}
 
-/* color picker row */
-.color-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-.chip {
-  width: 28px; height: 28px; border-radius: 99px; cursor: pointer;
-  border: 2px solid transparent; transition: transform 0.15s, border-color 0.15s;
-}
-.chip:hover { transform: scale(1.15); }
-.chip.sel { border-color: #fff; transform: scale(1.1); }
+/* Colors */
+.chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{width:24px;height:24px;border-radius:99px;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s;flex-shrink:0;}
+.chip:hover{transform:scale(1.15);}
+.chip.sel{border-color:#fff;transform:scale(1.1);}
 
-/* action buttons */
-.btn-action {
-  padding: 9px 18px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif;
-  font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity 0.2s;
-  border: 1px solid var(--border);
-}
-.btn-red { background: rgba(255,45,45,0.15); color: var(--red); border-color: rgba(255,45,45,0.25); }
-.btn-red:hover { background: rgba(255,45,45,0.25); }
-.btn-ghost { background: transparent; color: var(--muted); }
-.btn-ghost:hover { background: var(--surface2); color: var(--text); }
+/* Position grid */
+.pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;width:160px;}
+.pos-btn{padding:6px;border-radius:6px;border:1px solid var(--b1);background:transparent;color:var(--muted);font-size:11px;cursor:pointer;transition:all .15s;text-align:center;}
+.pos-btn:hover{background:var(--s2);color:var(--text);}
+.pos-btn.sel{background:rgba(255,45,45,.15);color:var(--red);border-color:rgba(255,45,45,.3);}
+.pos-spacer{visibility:hidden;}
 
-/* test alert card */
-.test-row { display: flex; gap: 10px; align-items: flex-end; }
-.test-row .field { flex: 1; }
-.test-row .btn-action { height: 38px; white-space: nowrap; }
+/* Buttons */
+.btn{padding:8px 16px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .2s;border:1px solid var(--b1);}
+.btn-red{background:rgba(255,45,45,.15);color:var(--red);border-color:rgba(255,45,45,.25);}
+.btn-red:hover{background:rgba(255,45,45,.25);}
+.btn-ghost{background:transparent;color:var(--muted);}
+.btn-ghost:hover{background:var(--s2);color:var(--text);}
+.btn-green{background:rgba(0,230,118,.12);color:var(--green);border-color:rgba(0,230,118,.2);}
+.btn-green:hover{background:rgba(0,230,118,.2);}
 
-/* saved toast */
-#toast {
-  position: fixed; bottom: 24px; right: 24px;
-  background: rgba(0,230,118,0.15); border: 1px solid rgba(0,230,118,0.3);
-  border-radius: var(--radius-sm); padding: 10px 18px;
-  font-size: 13px; color: var(--green); opacity: 0; pointer-events: none;
-  transition: opacity 0.3s; z-index: 100;
-}
-#toast.show { opacity: 1; }
+/* Test row */
+.test-row{display:flex;gap:8px;align-items:flex-end;}
+.test-row .field{flex:1;}
 
 /* OBS links */
-.obs-links { display: flex; flex-direction: column; gap: 6px; }
-.obs-link-row {
-  display: flex; align-items: center; gap: 10px;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 8px 12px;
-}
-.obs-link-label { font-size: 12px; color: var(--muted); min-width: 100px; }
-.obs-link-url { font-size: 12px; color: var(--hint); font-family: monospace; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.btn-copy {
-  font-size: 11px; color: var(--muted); background: transparent;
-  border: 1px solid var(--border); border-radius: 6px;
-  padding: 3px 8px; cursor: pointer; white-space: nowrap;
-}
-.btn-copy:hover { color: var(--text); }
-.btn-copy.copied { color: var(--green); border-color: rgba(0,230,118,0.3); }
+.obsrow{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--rs);padding:7px 12px;}
+.obslbl{font-size:11px;color:var(--muted);min-width:120px;flex-shrink:0;}
+.obsurl{font-size:11px;color:var(--hint);font-family:monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn-copy{font-size:10px;color:var(--muted);background:transparent;border:1px solid var(--b1);border-radius:5px;padding:3px 7px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.btn-copy:hover{color:var(--text);}
+.btn-copy.ok{color:var(--green);border-color:rgba(0,230,118,.3);}
+
+/* Toast */
+#toast{position:fixed;bottom:20px;right:20px;background:rgba(0,230,118,.15);border:1px solid rgba(0,230,118,.3);border-radius:var(--rs);padding:9px 16px;font-size:12px;color:var(--green);opacity:0;pointer-events:none;transition:opacity .3s;z-index:99;}
+#toast.show{opacity:1;}
+
+/* Divider */
+.divider{height:1px;background:var(--b1);margin:2px 0;}
+
+@media(max-width:600px){.frow,.frow3{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 
-<!-- Login -->
 <div id="loginScreen">
-  <div class="login-card">
-    <h1>OVERLAY DASHBOARD</h1>
-    <p>Enter your password to manage overlays</p>
+  <div class="lcard">
+    <h1>DASHBOARD</h1>
+    <p>Enter password to manage overlays</p>
     <input type="password" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')login()"/>
-    <button class="btn-primary" onclick="login()">ENTER</button>
-    <div class="error-msg" id="loginErr">Wrong password</div>
+    <button class="btn-p" onclick="login()">ENTER</button>
+    <div class="err" id="loginErr">Wrong password — try again</div>
   </div>
 </div>
 
-<!-- Main app -->
 <div id="app">
   <div class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-title">OVERLAY DASHBOARD</div>
-      <div class="status-dot" id="statusDot"></div>
-      <div class="clients-badge" id="clientsBadge">0 overlays</div>
+    <div class="tb-left">
+      <div class="tb-title">OVERLAY DASHBOARD</div>
+      <div class="sdot" id="sdot"></div>
+      <div class="cbadge" id="cbadge">0 overlays</div>
     </div>
-    <button class="btn-logout" onclick="logout()">Log out</button>
+    <button class="btn-out" onclick="logout()">Log out</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('test',this)">🔥 Test Alert</button>
+    <button class="tab" onclick="switchTab('alert',this)">🔔 Donation Alert</button>
+    <button class="tab" onclick="switchTab('recent',this)">📋 Recent</button>
+    <button class="tab" onclick="switchTab('topdono',this)">👑 Top Donation</button>
+    <button class="tab" onclick="switchTab('goal',this)">🎯 Goal</button>
+    <button class="tab" onclick="switchTab('links',this)">🔗 OBS Links</button>
   </div>
 
   <div class="content">
 
-    <!-- Test Alert -->
-    <div class="section">
-      <div class="section-head">
-        <div class="section-title">TEST ALERT <span class="section-badge badge-red">Fire now</span></div>
-      </div>
-      <div class="section-body">
-        <div class="test-row">
-          <div class="field"><label>Donor name</label><input type="text" id="testName" value="Rahul Sharma"/></div>
-          <div class="field"><label>Amount (₹)</label><input type="number" id="testAmt" value="199"/></div>
-          <div class="field"><label>Message</label><input type="text" id="testMsg" value="Keep it up! 🔥"/></div>
-          <button class="btn-action btn-red" onclick="sendTest()">Send Test Alert</button>
+    <!-- TEST -->
+    <div class="panel active" id="panel-test">
+      <div class="card">
+        <div class="card-head"><div class="card-title">FIRE TEST ALERT <span class="badge br">Sends to OBS now</span></div></div>
+        <div class="card-body">
+          <div class="test-row">
+            <div class="field"><label>Donor name</label><input type="text" id="tName" value="Rahul Sharma"/></div>
+            <div class="field"><label>Amount ₹</label><input type="number" id="tAmt" value="199"/></div>
+          </div>
+          <div class="field"><label>Message</label><input type="text" id="tMsg" value="Keep making great content! 🔥"/></div>
+          <button class="btn btn-red" style="align-self:flex-start" onclick="sendTest()">⚡ Send Test Alert</button>
         </div>
       </div>
     </div>
 
-    <!-- Donation Alert settings -->
-    <div class="section">
-      <div class="section-head">
-        <div class="section-title">DONATION ALERT <span class="section-badge badge-red">obs-overlay</span></div>
-      </div>
-      <div class="section-body">
-        <div class="field-row">
-          <div class="field">
-            <label>Alert duration (seconds)</label>
-            <div class="range-wrap">
-              <input type="range" min="5" max="30" step="1" id="alertDuration" oninput="rangeOut(this,'alertDurationVal');save('alert','duration',this.value*1000)"/>
-              <span class="range-val" id="alertDurationVal">12s</span>
+    <!-- ALERT -->
+    <div class="panel" id="panel-alert">
+      <div class="card">
+        <div class="card-head"><div class="card-title">DONATION ALERT <span class="badge br">obs-overlay</span></div></div>
+        <div class="card-body">
+          <div class="frow">
+            <div class="field">
+              <label>Duration (seconds)</label>
+              <div class="rrow"><input type="range" min="5" max="30" step="1" id="aDur" oninput="rv(this,'aDurV');sv('alert','duration',+this.value*1000)"/><span class="rval" id="aDurV">12s</span></div>
+            </div>
+            <div class="field">
+              <label>Position on screen</label>
+              <div class="pos-grid" id="alertPosGrid"></div>
             </div>
           </div>
-          <div class="field">
-            <label>Position on screen</label>
-            <select id="alertPosition" onchange="save('alert','position',this.value)">
-              <option value="top-center">Top center</option>
-              <option value="top-left">Top left</option>
-              <option value="top-right">Top right</option>
-              <option value="bottom-center">Bottom center</option>
-              <option value="bottom-left">Bottom left</option>
-              <option value="bottom-right">Bottom right</option>
-            </select>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <div class="toggle-row">
-              <span class="toggle-label">Text-to-speech (TTS)</span>
-              <div class="toggle on" id="ttsToggle" onclick="toggleField(this,'alert','ttsEnabled')"></div>
+          <div class="divider"></div>
+          <div class="frow">
+            <div class="field">
+              <div class="trow"><span class="tlabel">Text-to-speech (TTS)</span><div class="tog on" id="ttsTog" onclick="tog(this,'alert','ttsEnabled')"></div></div>
+            </div>
+            <div class="field">
+              <label>TTS Language</label>
+              <select id="ttsLang" onchange="sv('alert','ttsLang',this.value)">
+                <option value="hi-IN">Hindi (hi-IN)</option>
+                <option value="en-IN">Indian English (en-IN)</option>
+                <option value="en-US">US English (en-US)</option>
+                <option value="en-GB">British English (en-GB)</option>
+              </select>
             </div>
           </div>
-          <div class="field">
-            <label>TTS Language</label>
-            <select id="ttsLang" onchange="save('alert','ttsLang',this.value)">
-              <option value="hi-IN">Hindi (hi-IN)</option>
-              <option value="en-IN">Indian English (en-IN)</option>
-              <option value="en-US">US English (en-US)</option>
-              <option value="en-GB">British English (en-GB)</option>
-            </select>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label>TTS Speed</label>
-            <div class="range-wrap">
-              <input type="range" min="0.5" max="1.5" step="0.05" id="ttsRate" oninput="rangeOut(this,'ttsRateVal');save('alert','ttsRate',parseFloat(this.value))"/>
-              <span class="range-val" id="ttsRateVal">0.95x</span>
+          <div class="frow">
+            <div class="field">
+              <label>TTS Speed</label>
+              <div class="rrow"><input type="range" min="0.5" max="1.8" step="0.05" id="ttsSpd" oninput="rv(this,'ttsSpdV');sv('alert','ttsRate',+this.value)"/><span class="rval" id="ttsSpdV">0.95x</span></div>
             </div>
-          </div>
-          <div class="field">
-            <label>Accent color</label>
-            <div class="color-chips" id="alertColorChips"></div>
+            <div class="field">
+              <label>Accent color</label>
+              <div class="chips" id="aColorChips"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Recent Donations settings -->
-    <div class="section">
-      <div class="section-head">
-        <div class="section-title">RECENT DONATIONS <span class="section-badge badge-blue">obs-recent</span></div>
-      </div>
-      <div class="section-body">
-        <div class="field-row">
-          <div class="field">
-            <label>Max donations shown</label>
-            <div class="range-wrap">
-              <input type="range" min="1" max="5" step="1" id="recentMax" oninput="rangeOut(this,'recentMaxVal');save('recent','maxItems',parseInt(this.value))"/>
-              <span class="range-val" id="recentMaxVal">5</span>
+    <!-- RECENT -->
+    <div class="panel" id="panel-recent">
+      <div class="card">
+        <div class="card-head"><div class="card-title">RECENT DONATIONS <span class="badge bbl">obs-recent</span></div></div>
+        <div class="card-body">
+          <div class="frow">
+            <div class="field">
+              <div class="trow"><span class="tlabel">Visible on stream</span><div class="tog on" id="recVisTog" onclick="tog(this,'recent','visible')"></div></div>
+            </div>
+            <div class="field">
+              <label>Max donations shown</label>
+              <div class="rrow"><input type="range" min="1" max="5" step="1" id="recMax" oninput="rv(this,'recMaxV');sv('recent','maxItems',+this.value)"/><span class="rval" id="recMaxV">5</span></div>
             </div>
           </div>
-          <div class="field">
-            <label>Slide speed (seconds each)</label>
-            <div class="range-wrap">
-              <input type="range" min="2" max="8" step="0.5" id="slideMs" oninput="rangeOut(this,'slideMsVal');save('recent','slideMs',this.value*1000)"/>
-              <span class="range-val" id="slideMsVal">3.5s</span>
+          <div class="frow">
+            <div class="field">
+              <label>Slide speed (seconds)</label>
+              <div class="rrow"><input type="range" min="1.5" max="8" step="0.5" id="recSpd" oninput="rv(this,'recSpdV',true);sv('recent','slideMs',+this.value*1000)"/><span class="rval" id="recSpdV">3.5s</span></div>
             </div>
-          </div>
-        </div>
-        <div class="field">
-          <label>Accent color</label>
-          <div class="color-chips" id="recentColorChips"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Top Donation settings -->
-    <div class="section">
-      <div class="section-head">
-        <div class="section-title">TOP DONATION <span class="section-badge badge-gold">obs-topdono</span></div>
-      </div>
-      <div class="section-body">
-        <div class="field-row">
-          <div class="field">
-            <div class="toggle-row">
-              <span class="toggle-label">Visible on stream</span>
-              <div class="toggle on" id="topVisToggle" onclick="toggleField(this,'topdono','visible')"></div>
+            <div class="field">
+              <label>Accent color</label>
+              <div class="chips" id="rColorChips"></div>
             </div>
-          </div>
-          <div class="field">
-            <label>Accent color</label>
-            <div class="color-chips" id="topColorChips"></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Goal settings -->
-    <div class="section">
-      <div class="section-head">
-        <div class="section-title">DONATION GOAL <span class="section-badge badge-green">obs-goal</span></div>
-      </div>
-      <div class="section-body">
-        <div class="field-row">
-          <div class="field">
-            <label>Goal amount (₹)</label>
-            <input type="number" id="goalAmount" placeholder="5000" onchange="save('goal','amount',parseFloat(this.value))"/>
+    <!-- TOP DONO -->
+    <div class="panel" id="panel-topdono">
+      <div class="card">
+        <div class="card-head"><div class="card-title">TOP DONATION <span class="badge bg">obs-topdono</span></div></div>
+        <div class="card-body">
+          <div class="frow">
+            <div class="field">
+              <div class="trow"><span class="tlabel">Visible on stream</span><div class="tog on" id="topVisTog" onclick="tog(this,'topdono','visible')"></div></div>
+            </div>
+            <div class="field">
+              <label>Accent color</label>
+              <div class="chips" id="tColorChips"></div>
+            </div>
           </div>
           <div class="field">
-            <label>Goal title</label>
-            <input type="text" id="goalTitle" placeholder="Stream Goal" oninput="save('goal','title',this.value)"/>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label>Starting amount (₹)</label>
-            <input type="number" id="goalStart" placeholder="0" onchange="save('goal','start',parseFloat(this.value))"/>
-          </div>
-          <div class="field">
-            <label>Bar color</label>
-            <div class="color-chips" id="goalColorChips"></div>
-          </div>
-        </div>
-        <div class="field">
-          <div class="toggle-row">
-            <span class="toggle-label" style="font-size:12px;color:var(--muted)">Reset goal progress for new stream</span>
-            <button class="btn-action btn-ghost" onclick="resetGoal()" style="font-size:12px;padding:6px 14px;">Reset to ₹0</button>
+            <label>Panel title (right side text)</label>
+            <input type="text" id="topTitle" placeholder="DONATION" oninput="sv('topdono','title',this.value)"/>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- OBS Links -->
-    <div class="section">
-      <div class="section-head">
-        <div class="section-title">OBS BROWSER SOURCE URLS</div>
+    <!-- GOAL -->
+    <div class="panel" id="panel-goal">
+      <div class="card">
+        <div class="card-head"><div class="card-title">DONATION GOAL <span class="badge bb">obs-goal</span></div></div>
+        <div class="card-body">
+          <div class="frow">
+            <div class="field"><label>Goal amount (₹)</label><input type="number" id="gAmt" placeholder="5000" onchange="sv('goal','amount',+this.value)"/></div>
+            <div class="field"><label>Goal title</label><input type="text" id="gTitle" placeholder="Stream Goal" oninput="sv('goal','title',this.value)"/></div>
+          </div>
+          <div class="frow">
+            <div class="field"><label>Starting amount already raised (₹)</label><input type="number" id="gStart" placeholder="0" onchange="sv('goal','start',+this.value)"/></div>
+            <div class="field">
+              <label>Bar color</label>
+              <div class="chips" id="gColorChips"></div>
+            </div>
+          </div>
+          <div class="trow">
+            <span style="font-size:12px;color:var(--muted)">Reset goal to ₹0 for new stream</span>
+            <button class="btn btn-ghost" onclick="resetGoal()" style="font-size:12px;padding:6px 12px;">Reset progress</button>
+          </div>
+        </div>
       </div>
-      <div class="section-body">
-        <div class="obs-links" id="obsLinks"></div>
+    </div>
+
+    <!-- OBS LINKS -->
+    <div class="panel" id="panel-links">
+      <div class="card">
+        <div class="card-head"><div class="card-title">OBS BROWSER SOURCE URLS</div></div>
+        <div class="card-body" id="obsLinksWrap" style="gap:6px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">RECOMMENDED OBS SIZES</div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--rs);padding:10px 12px;">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:3px;">Donation Alert</div>
+              <div style="font-size:14px;font-weight:500;">520 × 200</div>
+            </div>
+            <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--rs);padding:10px 12px;">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:3px;">Recent Donations</div>
+              <div style="font-size:14px;font-weight:500;">320 × 110</div>
+            </div>
+            <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--rs);padding:10px 12px;">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:3px;">Top Donation</div>
+              <div style="font-size:14px;font-weight:500;">300 × 120</div>
+            </div>
+            <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--rs);padding:10px 12px;">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:3px;">Donation Goal</div>
+              <div style="font-size:14px;font-weight:500;">320 × 50</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
   </div>
 </div>
 
-<div id="toast">Saved!</div>
+<div id="toast">✓ Applied to OBS</div>
 
 <script>
 const BASE = location.origin;
-let password = '';
-let settings = {};
-let pollTimer = null;
+let pw = '', settings = {}, pollT = null;
 
 const COLORS = [
-  { name:'red',    hex:'#FF2D2D' },
-  { name:'gold',   hex:'#FFD700' },
-  { name:'green',  hex:'#00e676' },
-  { name:'blue',   hex:'#42A5F5' },
-  { name:'purple', hex:'#CE93D8' },
-  { name:'pink',   hex:'#F48FB1' },
-  { name:'white',  hex:'#ffffff' },
+  {name:'red',hex:'#FF2D2D'},{name:'gold',hex:'#FFD700'},
+  {name:'green',hex:'#00e676'},{name:'blue',hex:'#42A5F5'},
+  {name:'purple',hex:'#CE93D8'},{name:'pink',hex:'#F48FB1'},
+  {name:'white',hex:'#ffffff'},
+];
+
+const POSITIONS = [
+  {id:'top-left',lbl:'↖'},{id:'top-center',lbl:'↑'},{id:'top-right',lbl:'↗'},
+  {id:'bottom-left',lbl:'↙'},{id:'bottom-center',lbl:'↓'},{id:'bottom-right',lbl:'↘'},
 ];
 
 /* ── Auth ── */
 async function login() {
-  const pw = document.getElementById('pwInput').value.trim();
+  const p = document.getElementById('pwInput').value.trim();
   try {
-    const r = await fetch('/api/login', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({password: pw})
-    });
+    const r = await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:p})});
     if (r.ok) {
-      password = pw;
+      pw = p;
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
       await loadSettings();
-      startPolling();
-    } else {
-      document.getElementById('loginErr').style.display = 'block';
-    }
+      startPoll();
+    } else { document.getElementById('loginErr').style.display = 'block'; }
   } catch(e) { document.getElementById('loginErr').style.display = 'block'; }
 }
-
 function logout() {
-  password = '';
-  clearInterval(pollTimer);
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('pwInput').value = '';
+  pw=''; clearInterval(pollT);
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('pwInput').value='';
 }
 
-/* ── Load settings ── */
+/* ── Tabs ── */
+function switchTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ── Load & apply settings ── */
 async function loadSettings() {
   try {
-    const r = await fetch('/api/settings', { headers:{'x-dashboard-password': password} });
+    const r = await fetch('/api/settings',{headers:{'x-dashboard-password':pw}});
     settings = await r.json();
     applyToUI();
-    buildObsLinks();
+    buildLinks();
   } catch(e) { console.error(e); }
 }
 
 function applyToUI() {
-  const a = settings.alert;
-  const re = settings.recent;
-  const g = settings.goal;
+  const a=settings.alert||{}, re=settings.recent||{}, td=settings.topdono||{}, g=settings.goal||{};
 
   // Alert
-  const durSec = Math.round(a.duration / 1000);
-  document.getElementById('alertDuration').value = durSec;
-  document.getElementById('alertDurationVal').textContent = durSec + 's';
-  document.getElementById('alertPosition').value = a.position || 'top-center';
-  setToggle('ttsToggle', a.ttsEnabled);
-  document.getElementById('ttsLang').value = a.ttsLang || 'hi-IN';
-  document.getElementById('ttsRate').value = a.ttsRate || 0.95;
-  document.getElementById('ttsRateVal').textContent = (a.ttsRate||0.95) + 'x';
-  buildColorChips('alertColorChips', 'alert', 'accentColor', a.accentColor);
+  setRange('aDur', Math.round((a.duration||12000)/1000), 'aDurV', v=>v+'s');
+  setTog('ttsTog', a.ttsEnabled!==false);
+  setSelect('ttsLang', a.ttsLang||'hi-IN');
+  setRange('ttsSpd', a.ttsRate||0.95, 'ttsSpdV', v=>v+'x');
+  buildChips('aColorChips','alert','accentColor', a.accentColor||'#FF2D2D', false);
+  buildPosGrid('alertPosGrid', a.position||'top-center');
 
   // Recent
-  document.getElementById('recentMax').value = re.maxItems || 5;
-  document.getElementById('recentMaxVal').textContent = re.maxItems || 5;
-  document.getElementById('slideMs').value = (re.slideMs||3500) / 1000;
-  document.getElementById('slideMsVal').textContent = ((re.slideMs||3500)/1000) + 's';
-  buildColorChips('recentColorChips', 'recent', 'accentColor', re.accentColor);
+  setTog('recVisTog', re.visible!==false);
+  setRange('recMax', re.maxItems||5, 'recMaxV', v=>v);
+  setRange('recSpd', (re.slideMs||3500)/1000, 'recSpdV', v=>v+'s');
+  buildChips('rColorChips','recent','accentColor', re.accentColor||'#FF2D2D', false);
 
   // Top dono
-  setToggle('topVisToggle', settings.topdono.visible !== false);
-  buildColorChips('topColorChips', 'topdono', 'accentColor', settings.topdono.accentColor);
+  setTog('topVisTog', td.visible!==false);
+  buildChips('tColorChips','topdono','accentColor', td.accentColor||'#FFD700', false);
+  document.getElementById('topTitle').value = td.title||'DONATION';
 
   // Goal
-  document.getElementById('goalAmount').value = g.amount || 5000;
-  document.getElementById('goalTitle').value  = g.title  || 'Stream Goal';
-  document.getElementById('goalStart').value  = g.start  || 0;
-  buildColorChips('goalColorChips', 'goal', 'color', g.color || 'red', true);
+  document.getElementById('gAmt').value   = g.amount||5000;
+  document.getElementById('gTitle').value = g.title||'Stream Goal';
+  document.getElementById('gStart').value = g.start||0;
+  buildChips('gColorChips','goal','color', g.color||'red', true);
+}
+
+function setRange(id, val, outId, fmt) {
+  document.getElementById(id).value = val;
+  document.getElementById(outId).textContent = fmt(val);
+}
+function setTog(id, val) { document.getElementById(id).classList.toggle('on', !!val); }
+function setSelect(id, val) { document.getElementById(id).value = val; }
+
+/* ── Position grid ── */
+function buildPosGrid(containerId, current) {
+  const wrap = document.getElementById(containerId);
+  wrap.innerHTML = '';
+  // 3x2 grid: TL, TC, TR, BL, BC, BR
+  POSITIONS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'pos-btn' + (p.id === current ? ' sel' : '');
+    btn.textContent = p.lbl;
+    btn.title = p.id;
+    btn.onclick = () => {
+      wrap.querySelectorAll('.pos-btn').forEach(b=>b.classList.remove('sel'));
+      btn.classList.add('sel');
+      sv('alert','position', p.id);
+    };
+    wrap.appendChild(btn);
+  });
 }
 
 /* ── Color chips ── */
-function buildColorChips(containerId, section, key, currentVal, nameMode) {
+function buildChips(containerId, section, key, current, nameMode) {
   const wrap = document.getElementById(containerId);
   wrap.innerHTML = '';
   COLORS.forEach(c => {
     const chip = document.createElement('div');
-    chip.className = 'chip' + ((nameMode ? c.name === currentVal : c.hex.toLowerCase() === (currentVal||'').toLowerCase()) ? ' sel' : '');
+    const isSel = nameMode ? c.name===current : c.hex.toLowerCase()===(current||'').toLowerCase();
+    chip.className = 'chip' + (isSel?' sel':'');
     chip.style.background = c.hex;
     chip.title = c.name;
     chip.onclick = () => {
-      wrap.querySelectorAll('.chip').forEach(ch => ch.classList.remove('sel'));
+      wrap.querySelectorAll('.chip').forEach(ch=>ch.classList.remove('sel'));
       chip.classList.add('sel');
-      save(section, key, nameMode ? c.name : c.hex);
+      sv(section, key, nameMode ? c.name : c.hex);
     };
     wrap.appendChild(chip);
   });
 }
 
-/* ── Toggle ── */
-function setToggle(id, val) {
-  const el = document.getElementById(id);
-  el.classList.toggle('on', !!val);
-}
-function toggleField(el, section, key) {
-  const newVal = !el.classList.contains('on');
-  el.classList.toggle('on', newVal);
-  save(section, key, newVal);
-}
-
-/* ── Range ── */
-function rangeOut(el, outId) {
+/* ── Helpers ── */
+function rv(el, outId, isTime) {
   const v = parseFloat(el.value);
   const id = el.id;
   let txt = v;
-  if (id === 'alertDuration') txt = v + 's';
-  else if (id === 'ttsRate')  txt = v + 'x';
-  else if (id === 'slideMs')  txt = v + 's';
+  if (id==='aDur') txt = v+'s';
+  else if (id==='ttsSpd') txt = v+'x';
+  else if (id==='recSpd') txt = v+'s';
   document.getElementById(outId).textContent = txt;
 }
+function tog(el, section, key) {
+  const val = !el.classList.contains('on');
+  el.classList.toggle('on', val);
+  sv(section, key, val);
+}
 
-/* ── Save setting ── */
-async function save(section, key, value) {
+/* ── Save to server → broadcast to OBS ── */
+async function sv(section, key, value) {
   try {
-    await fetch('/api/settings', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-dashboard-password': password },
-      body: JSON.stringify({ section, key, value })
+    await fetch('/api/settings',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-dashboard-password':pw},
+      body:JSON.stringify({section,key,value})
     });
     showToast();
   } catch(e) { console.error(e); }
 }
 
 function showToast() {
-  const t = document.getElementById('toast');
+  const t=document.getElementById('toast');
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 1800);
+  setTimeout(()=>t.classList.remove('show'),1600);
 }
 
 /* ── Test alert ── */
 async function sendTest() {
-  const name = document.getElementById('testName').value || 'Test Donor';
-  const amount = parseFloat(document.getElementById('testAmt').value) || 99;
-  const message = document.getElementById('testMsg').value || '';
+  const name=document.getElementById('tName').value||'Test Donor';
+  const amount=parseFloat(document.getElementById('tAmt').value)||99;
+  const message=document.getElementById('tMsg').value||'';
   try {
-    await fetch('/api/test-alert', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-dashboard-password': password },
-      body: JSON.stringify({ name, amount, message })
+    await fetch('/api/test-alert',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-dashboard-password':pw},
+      body:JSON.stringify({name,amount,message})
     });
     showToast();
   } catch(e) { console.error(e); }
@@ -552,52 +511,47 @@ async function sendTest() {
 /* ── Reset goal ── */
 async function resetGoal() {
   if (!confirm('Reset goal progress to ₹0?')) return;
-  await save('goal', 'currentTotal', 0);
-  await save('goal', 'start', 0);
-  document.getElementById('goalStart').value = 0;
+  await sv('goal','currentTotal',0);
+  await sv('goal','start',0);
+  document.getElementById('gStart').value=0;
 }
 
-/* ── OBS links ── */
-function buildObsLinks() {
-  const links = [
-    { label: 'Donation Alert',   url: BASE + '/overlay' },
-    { label: 'Recent Donations', url: BASE + '/overlay/recent' },
-    { label: 'Top Donation',     url: BASE + '/overlay/top' },
-    { label: 'Donation Goal',    url: BASE + '/overlay/goal' },
-    { label: 'Dashboard',        url: BASE + '/dashboard' },
+/* ── OBS Links ── */
+function buildLinks() {
+  const links=[
+    {lbl:'Donation Alert',  url:BASE+'/overlay'},
+    {lbl:'Recent Donations',url:BASE+'/overlay/recent'},
+    {lbl:'Top Donation',    url:BASE+'/overlay/top'},
+    {lbl:'Donation Goal',   url:BASE+'/overlay/goal'},
+    {lbl:'Dashboard',       url:BASE+'/dashboard'},
   ];
-  const wrap = document.getElementById('obsLinks');
-  wrap.innerHTML = '';
-  links.forEach(l => {
-    const row = document.createElement('div');
-    row.className = 'obs-link-row';
-    row.innerHTML = `
-      <span class="obs-link-label">${l.label}</span>
-      <span class="obs-link-url">${l.url}</span>
-      <button class="btn-copy" onclick="copyUrl(this,'${l.url}')">Copy</button>`;
+  const wrap=document.getElementById('obsLinksWrap');
+  wrap.innerHTML='';
+  links.forEach(l=>{
+    const row=document.createElement('div');
+    row.className='obsrow';
+    row.innerHTML=`<span class="obslbl">${l.lbl}</span><span class="obsurl">${l.url}</span><button class="btn-copy" onclick="copyUrl(this,'${l.url}')">Copy</button>`;
     wrap.appendChild(row);
   });
 }
-
-function copyUrl(btn, url) {
-  navigator.clipboard.writeText(url).then(() => {
-    btn.textContent = 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+function copyUrl(btn,url){
+  navigator.clipboard.writeText(url).then(()=>{
+    btn.textContent='Copied!'; btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);
   });
 }
 
 /* ── Poll client count ── */
-function startPolling() {
-  pollTimer = setInterval(async () => {
-    try {
-      const r = await fetch('/');
-      const d = await r.json();
-      const n = d.clients || 0;
-      document.getElementById('clientsBadge').textContent = n + ' overlay' + (n !== 1 ? 's' : '') + ' connected';
-      document.getElementById('statusDot').classList.toggle('off', n === 0);
-    } catch(e) {}
-  }, 3000);
+function startPoll(){
+  pollT=setInterval(async()=>{
+    try{
+      const r=await fetch('/');
+      const d=await r.json();
+      const n=d.clients||0;
+      document.getElementById('cbadge').textContent=n+' overlay'+(n!==1?'s':'')+' connected';
+      document.getElementById('sdot').classList.toggle('off',n===0);
+    }catch(e){}
+  },3000);
 }
 </script>
 </body>
