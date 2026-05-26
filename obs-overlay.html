@@ -2,253 +2,327 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<title>Donation Alert — AUMII</title>
+<title>Donation Alert</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="./_overlay-base.css"/>
 <style>
-/* ─── Layout ─────────────────────────────── */
-body { display:flex; align-items:flex-start; justify-content:center; width:100%; height:100%; }
-#alertWrap { width:100%; padding:10px; pointer-events:none; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* ─── Card ───────────────────────────────── */
-.alert-card {
-  position:relative; background:var(--surface);
-  border:1px solid var(--border-red); border-radius:var(--r-lg);
-  padding:16px 18px; display:flex; align-items:center; gap:14px;
-  backdrop-filter:blur(24px); overflow:hidden;
-  transform:translateY(-60px) scale(0.88); opacity:0;
-}
-.alert-card.show { animation:slideInTop  0.55s var(--ease-spring) forwards; }
-.alert-card.hide { animation:slideOutTop 0.40s var(--ease-out)    forwards; }
+  /* Transparent — OBS moves/resizes this source freely */
+  html, body {
+    background: transparent !important;
+    width: 100%; height: 100%;
+    overflow: hidden;
+    display: flex; align-items: flex-start; justify-content: center;
+  }
 
-/* ─── Avatar ─────────────────────────────── */
-.alert-avatar {
-  width:52px; height:52px; border-radius:50%; flex-shrink:0;
-  background:linear-gradient(135deg,var(--red),#ff6b6b);
-  display:flex; align-items:center; justify-content:center;
-  font-family:var(--font-display); font-size:20px; color:#fff;
-  position:relative;
-}
-/* spinning ring */
-.alert-avatar::after {
-  content:''; position:absolute; inset:-3px; border-radius:50%;
-  border:2px solid transparent;
-  background:conic-gradient(var(--red),transparent 50%,var(--red)) border-box;
-  -webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);
-  -webkit-mask-composite:destination-out; mask-composite:exclude;
-  animation:spin 2s linear infinite;
-}
+  #alertWrap {
+    width: 100%;
+    padding: 10px;
+    pointer-events: none;
+  }
 
-/* ─── Text ───────────────────────────────── */
-.alert-text { flex:1; min-width:0; }
-.alert-badge {
-  display:inline-flex; align-items:center; gap:4px;
-  background:var(--red-dim); border:1px solid var(--border-red);
-  border-radius:var(--r-full); padding:2px 9px;
-  font-size:10px; font-weight:600; color:#FF6B6B;
-  text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px;
-}
-.alert-badge::before { content:'♥'; font-size:9px; }
-.alert-donor {
-  font-family:var(--font-display); font-size:22px; letter-spacing:.04em;
-  color:#fff; line-height:1; margin-bottom:2px;
-  text-shadow:0 0 20px rgba(255,45,45,0.5);
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.alert-msg { font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .alert-card {
+    position: relative;
+    background: rgba(8,8,16,0.92);
+    border: 1px solid rgba(255,45,45,0.5);
+    border-radius: 18px;
+    padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
+    backdrop-filter: blur(24px);
+    overflow: hidden;
+    transform: translateY(-60px) scale(0.88);
+    opacity: 0;
+    transition: none;
+  }
+  .alert-card.show { animation: slideIn 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+  .alert-card.hide { animation: slideOut 0.4s cubic-bezier(0.55,0,1,0.45) forwards; }
 
-/* ─── Amount ─────────────────────────────── */
-.alert-amount {
-  font-family:var(--font-display); font-size:30px; letter-spacing:.04em;
-  color:var(--gold); text-shadow:0 0 30px var(--gold-glow);
-  white-space:nowrap; flex-shrink:0;
-  animation:amtPop 0.8s var(--ease-spring) 0.4s both;
-}
-@keyframes amtPop { 0%{transform:scale(0.5) rotate(-8deg);opacity:0} 100%{transform:scale(1) rotate(0);opacity:1} }
+  @keyframes slideIn {
+    0%   { transform: translateY(-60px) scale(0.88); opacity: 0; }
+    60%  { transform: translateY(8px) scale(1.02);   opacity: 1; }
+    100% { transform: translateY(0) scale(1);         opacity: 1; }
+  }
+  @keyframes slideOut {
+    0%   { transform: translateY(0) scale(1);         opacity: 1; }
+    100% { transform: translateY(-50px) scale(0.88);  opacity: 0; }
+  }
 
-/* ─── Drain bar ──────────────────────────── */
-.progress-bar {
-  position:absolute; bottom:0; left:0; right:0; height:3px;
-  background:rgba(255,255,255,0.06); border-radius:0 0 var(--r-lg) var(--r-lg); overflow:hidden;
-}
-.progress-fill {
-  height:100%; width:100%; transform-origin:left;
-  background:linear-gradient(90deg,var(--red),var(--gold));
-  animation:drain 11s linear 0.8s forwards;
-}
-@keyframes drain { to{transform:scaleX(0)} }
+  .alert-card::before {
+    content: '';
+    position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+    background: linear-gradient(90deg, transparent, #FF2D2D, transparent);
+    animation: glowLine 2s ease-in-out infinite;
+  }
+  @keyframes glowLine {
+    0%,100% { opacity:0.4; left:20%; right:20%; }
+    50%      { opacity:1;   left:5%;  right:5%; }
+  }
+  .alert-card::after {
+    content: '';
+    position: absolute; top:0; left:-80%; width:60%; height:100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+    animation: sweep 3s ease-in-out infinite 0.6s;
+  }
+  @keyframes sweep { to { left: 130%; } }
 
-/* ─── Particles canvas ───────────────────── */
-#pCanvas { position:absolute; inset:0; pointer-events:none; border-radius:var(--r-lg); }
+  .alert-avatar {
+    width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #FF2D2D, #ff6b6b);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: #fff;
+    position: relative;
+  }
+  .alert-avatar::after {
+    content: '';
+    position: absolute; inset: -3px; border-radius: 50%;
+    border: 2px solid transparent;
+    background: conic-gradient(#FF2D2D, transparent 50%, #FF2D2D) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out; mask-composite: exclude;
+    animation: rotateBorder 2s linear infinite;
+  }
+  @keyframes rotateBorder { to { transform: rotate(360deg); } }
 
-/* ─── Hearts ─────────────────────────────── */
-.heart { position:absolute; font-size:16px; animation:floatHeart 2s ease-out forwards; pointer-events:none; }
-@keyframes floatHeart { 0%{transform:translateY(0) scale(1);opacity:1} 100%{transform:translateY(-80px) scale(0.5);opacity:0} }
+  .alert-text { flex: 1; min-width: 0; }
+  .alert-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(255,45,45,0.18); border: 1px solid rgba(255,45,45,0.35);
+    border-radius: 20px; padding: 2px 9px;
+    font-size: 10px; font-weight: 600; color: #FF6B6B;
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;
+  }
+  .alert-badge::before { content: '♥'; font-size: 9px; }
+  .alert-donor {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 0.04em; color: #fff;
+    line-height: 1; margin-bottom: 2px;
+    text-shadow: 0 0 20px rgba(255,45,45,0.5);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .alert-msg {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; color: rgba(255,255,255,0.65);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .alert-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px; letter-spacing: 0.04em; color: #FFD700;
+    text-shadow: 0 0 30px rgba(255,215,0,0.7);
+    white-space: nowrap; flex-shrink: 0;
+    animation: amtPulse 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.4s both;
+  }
+  @keyframes amtPulse {
+    0%   { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg);    opacity: 1; }
+  }
+  .progress-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: rgba(255,255,255,0.06); border-radius: 0 0 18px 18px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FF2D2D, #FFD700);
+    width: 100%; transform-origin: left;
+    animation: drain 11s linear 0.8s forwards;
+  }
+  @keyframes drain { to { transform: scaleX(0); } }
 
-/* ─── TTS pill ───────────────────────────── */
-#ttsWrap { text-align:center; margin-top:8px; display:none; }
-.tts-pill {
-  display:inline-flex; align-items:center; gap:6px;
-  background:var(--surface); border:1px solid var(--border-gold);
-  border-radius:var(--r-full); padding:6px 14px;
-  font-family:var(--font-body); font-size:12px; color:var(--muted);
-}
-.tts-dot { width:7px; height:7px; border-radius:50%; background:var(--gold); animation:dotBlink 1s ease-in-out infinite; }
-@keyframes dotBlink { 0%,100%{opacity:1} 50%{opacity:.2} }
+  #pCanvas { position: absolute; inset: 0; pointer-events: none; border-radius: 18px; }
+
+  .heart {
+    position: absolute; font-size: 16px;
+    animation: floatHeart 2s ease-out forwards; pointer-events: none;
+  }
+  @keyframes floatHeart {
+    0%   { transform: translateY(0) scale(1);       opacity: 1; }
+    100% { transform: translateY(-80px) scale(0.5); opacity: 0; }
+  }
+
+  #ttsWrap {
+    text-align: center; margin-top: 8px; display: none;
+  }
+  .tts-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(8,8,16,0.85); border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 30px; padding: 6px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; color: rgba(255,255,255,0.7);
+  }
+  .tts-dot { width: 7px; height: 7px; border-radius: 50%; background: #FFD700; animation: blink 1s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 </style>
 </head>
 <body>
-
 <div id="alertWrap">
-  <div class="alert-card card-glow-edge card-shimmer" id="alertCard">
+  <div class="alert-card" id="alertCard">
     <canvas id="pCanvas" width="460" height="90"></canvas>
     <div class="alert-avatar" id="alertAvatar">?</div>
     <div class="alert-text">
       <div class="alert-badge">New Donation</div>
       <div class="alert-donor" id="alertDonor">Donor Name</div>
-      <div class="alert-msg"  id="alertMsg"></div>
+      <div class="alert-msg" id="alertMsg"></div>
     </div>
     <div class="alert-amount" id="alertAmt">₹99</div>
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
   </div>
-  <div id="ttsWrap"><div class="tts-pill"><div class="tts-dot"></div> Reading aloud...</div></div>
+  <div id="ttsWrap">
+    <div class="tts-pill"><div class="tts-dot"></div> Reading message...</div>
+  </div>
 </div>
 
-<div class="ws-status" id="wsStatus" title="WebSocket status"></div>
-
 <script>
-/* ══════ CONFIG ══════════════════════════════════════════ */
-const WS_URL         = 'wss://tips-production.up.railway.app/ws';
-const ALERT_DURATION = 12000;   // ms card stays on screen
+const SERVER_URL     = location.protocol === 'https:' ? 'wss://' + location.host + '/ws' : 'ws://' + location.host + '/ws';
+const ALERT_DURATION = 12000;
+const SOUND_URL      = '';
 const TTS_ENABLED    = true;
 const TTS_VOICE_LANG = 'hi-IN';
 const TTS_RATE       = 0.95;
 const TTS_PITCH      = 1.1;
 const TTS_VOLUME     = 1.0;
-/* ═══════════════════════════════════════════════════════ */
+const TTS_TEMPLATE   = (name, amount, msg) =>
+  msg ? `${name} donated ₹${amount} and says: ${msg}` : `${name} donated ₹${amount}! Thank you!`;
 
-// ─── Queue ─────────────────────────────────────────────
-let alertQueue = [], isShowing = false;
+let alertQueue = [], isShowing = false, ttsActive = false, audioUnlocked = false;
 const synth = window.speechSynthesis;
 let voices = [];
-const wsStatus = document.getElementById('wsStatus');
 
-// ─── Audio unlock (required by OBS Chromium) ──────────
-let audioUnlocked = false;
-function unlockAudio() {
+function unlockAndStart() {
   if (audioUnlocked) return; audioUnlocked = true;
-  try { const ac = new (window.AudioContext || window.webkitAudioContext)(); const b = ac.createBuffer(1,1,22050); const s = ac.createBufferSource(); s.buffer = b; s.connect(ac.destination); s.start(0); } catch(e){}
-  voices = synth.getVoices();
+  try {
+    const actx = new (window.AudioContext || window.webkitAudioContext)();
+    actx.resume();
+    const buf = actx.createBuffer(1,1,22050);
+    const src = actx.createBufferSource();
+    src.buffer = buf; src.connect(actx.destination); src.start(0);
+  } catch(e) {}
+  loadVoices();
 }
-document.addEventListener('click', unlockAudio, { once: true });
-setTimeout(unlockAudio, 2500);
-if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = () => { voices = synth.getVoices(); };
+document.addEventListener('click', unlockAndStart, { once: true });
+setTimeout(unlockAndStart, 2000);
 
-// ─── WebSocket (auto-reconnect) ────────────────────────
+function loadVoices() { voices = synth.getVoices(); }
+loadVoices();
+if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
+
+function getBestVoice() {
+  const exact = voices.find(v => v.lang === TTS_VOICE_LANG); if (exact) return exact;
+  const loose = voices.find(v => v.lang.startsWith(TTS_VOICE_LANG.split('-')[0]));
+  return loose || voices.find(v => v.default) || voices[0] || null;
+}
+
+function speakTTS(text, onDone) {
+  if (!TTS_ENABLED || !text) { onDone(); return; }
+  synth.cancel();
+  const clean = text.replace(/[\u{1F000}-\u{1FFFF}]/gu,'').replace(/[^\p{L}\p{N}\p{P}\s]/gu,'').trim();
+  if (!clean) { onDone(); return; }
+  document.getElementById('ttsWrap').style.display = 'block';
+  ttsActive = true;
+  let finished = false;
+  const estimatedMs = Math.max(3000, (clean.length / 13) * 1000 * (1 / TTS_RATE));
+  function done() {
+    if (finished) return; finished = true;
+    clearInterval(keepAlive);
+    document.getElementById('ttsWrap').style.display = 'none';
+    ttsActive = false; onDone();
+  }
+  const utter = new SpeechSynthesisUtterance(clean);
+  utter.lang = TTS_VOICE_LANG; utter.rate = TTS_RATE; utter.pitch = TTS_PITCH; utter.volume = TTS_VOLUME;
+  const voice = getBestVoice(); if (voice) utter.voice = voice;
+  const keepAlive = setInterval(() => { if (!synth.speaking) { clearInterval(keepAlive); return; } synth.pause(); synth.resume(); }, 8000);
+  const hardCap = setTimeout(done, estimatedMs + 4000);
+  utter.onend = utter.onerror = () => { clearTimeout(hardCap); done(); };
+  synth.speak(utter);
+  setTimeout(() => { if (!synth.speaking && !finished) { clearTimeout(hardCap); setTimeout(done, estimatedMs); } }, 600);
+}
+
+function applySettings(key, value) {
+  if (key === 'duration') ALERT_DURATION = parseInt(value);
+  if (key === 'ttsEnabled') TTS_ENABLED_LIVE = !!value;
+  if (key === 'ttsLang') { TTS_VOICE_LANG_LIVE = value; }
+  if (key === 'ttsRate') { TTS_RATE_LIVE = parseFloat(value); }
+  if (key === 'accentColor') {
+    document.documentElement.style.setProperty('--accent', value);
+  }
+  if (key === 'position') {
+    const w = document.getElementById('alertWrap');
+    const pos = {
+      'top-center':    'top:10px;left:50%;transform:translateX(-50%)',
+      'top-left':      'top:10px;left:10px',
+      'top-right':     'top:10px;right:10px',
+      'bottom-center': 'bottom:10px;left:50%;transform:translateX(-50%)',
+      'bottom-left':   'bottom:10px;left:10px',
+      'bottom-right':  'bottom:10px;right:10px',
+    };
+    if (pos[value]) w.style.cssText = 'position:absolute;width:520px;pointer-events:none;' + pos[value];
+  }
+}
+
+let TTS_ENABLED_LIVE  = TTS_ENABLED;
+let TTS_VOICE_LANG_LIVE = TTS_VOICE_LANG;
+let TTS_RATE_LIVE     = TTS_RATE;
+
 function connect() {
-  const ws = new WebSocket(WS_URL);
-  ws.onopen    = () => { wsStatus.className = 'ws-status ok'; console.log('[alert] ✅ WS connected'); };
-  ws.onmessage = (e) => { try { const d = JSON.parse(e.data); if (d.type === 'donation') enqueue(d); if (d.type === 'settings_update') applySettings(d); } catch(_){} };
-  ws.onclose   = () => { wsStatus.className = 'ws-status err'; setTimeout(connect, 3000); };
-  ws.onerror   = () => {};
+  const ws = new WebSocket(SERVER_URL);
+  ws.onopen    = () => console.log('[overlay] connected to', SERVER_URL);
+  ws.onmessage = (e) => {
+    try {
+      const d = JSON.parse(e.data);
+      if (d.type === 'donation') queueDonation(d);
+      if (d.type === 'settings_update' && d.section === 'alert') applySettings(d.key, d.value);
+    } catch(err) {}
+  };
+  ws.onclose   = () => setTimeout(connect, 3000);
 }
 connect();
 
-function applySettings(d) {
-  // handled server-side; overlay uses init payload
-}
+function queueDonation(data) { alertQueue.push(data); if (!isShowing) processQueue(); }
+function processQueue() { if (isShowing || !alertQueue.length) return; isShowing = true; showAlert(alertQueue.shift()); }
 
-// ─── Queue ─────────────────────────────────────────────
-function enqueue(data) { alertQueue.push(data); if (!isShowing) dequeue(); }
-function dequeue()     { if (isShowing || !alertQueue.length) return; isShowing = true; showAlert(alertQueue.shift()); }
-
-// ─── Show alert ────────────────────────────────────────
 function showAlert(data) {
   const card = document.getElementById('alertCard');
-  const init = data.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
-  document.getElementById('alertAvatar').textContent = init;
+  const initials = data.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+  document.getElementById('alertAvatar').textContent = initials;
   document.getElementById('alertDonor').textContent  = data.name;
   document.getElementById('alertMsg').textContent    = data.message ? `"${data.message}"` : '';
   document.getElementById('alertAmt').textContent    = `₹${data.amount}`;
-
   const pf = document.getElementById('progressFill');
-  pf.style.animation = 'none'; void pf.offsetWidth; pf.style.animation = 'drain 11s linear 0.8s forwards';
-
+  pf.style.animation = 'none'; void pf.offsetWidth;
+  pf.style.animation = 'drain 11s linear 0.8s forwards';
+  if (SOUND_URL) { try { new Audio(SOUND_URL).play(); } catch(e){} }
   card.classList.remove('hide'); card.classList.add('show');
   spawnParticles(); spawnHearts();
-
-  let hidden = false;
-  const start = Date.now();
-
-  function hide() {
+  const alertStart = Date.now(); let hidden = false;
+  function hideAlert() {
     if (hidden) return; hidden = true; synth.cancel();
     card.classList.remove('show'); card.classList.add('hide');
-    document.getElementById('ttsWrap').style.display = 'none';
-    setTimeout(() => { card.classList.remove('hide'); isShowing = false; dequeue(); }, 450);
+    setTimeout(() => { card.classList.remove('hide'); card.style.transform=''; isShowing=false; processQueue(); }, 450);
   }
-
   setTimeout(() => {
-    speakTTS(data, () => {
-      const rem = Math.max(0, ALERT_DURATION - (Date.now() - start));
-      setTimeout(hide, rem + 400);
+    speakTTS(TTS_TEMPLATE(data.name, data.amount, data.message||''), () => {
+      const remaining = Math.max(0, ALERT_DURATION - (Date.now()-alertStart));
+      setTimeout(hideAlert, remaining + 500);
     });
   }, 800);
-
-  setTimeout(hide, ALERT_DURATION + 28000); // hard safety timeout
+  setTimeout(hideAlert, ALERT_DURATION + 20000);
 }
 
-// ─── TTS ───────────────────────────────────────────────
-function speakTTS(data, onDone) {
-  if (!TTS_ENABLED) { onDone(); return; }
-  synth.cancel();
-  const text  = data.message ? `${data.name} donated ₹${data.amount} and says: ${data.message}` : `${data.name} donated ₹${data.amount}! Thank you!`;
-  const clean = text.replace(/[^\p{L}\p{N}\p{P}\s]/gu, '').trim();
-  if (!clean) { onDone(); return; }
-  document.getElementById('ttsWrap').style.display = 'block';
-  const utter = new SpeechSynthesisUtterance(clean);
-  utter.lang   = TTS_VOICE_LANG; utter.rate = TTS_RATE; utter.pitch = TTS_PITCH; utter.volume = TTS_VOLUME;
-  const v = voices.find(v => v.lang === TTS_VOICE_LANG) || voices[0];
-  if (v) utter.voice = v;
-  let done = false;
-  const guard = setTimeout(() => { if(!done){done=true; onDone();} }, (clean.length / 12) * 1000 + 5000);
-  utter.onend  = utter.onerror = () => { if(!done){done=true; clearTimeout(guard); onDone();} };
-  synth.speak(utter);
-  // Keep-alive for long TTS (OBS Chromium pauses synthesis)
-  const ka = setInterval(() => { if(!synth.speaking){clearInterval(ka);} else {synth.pause();synth.resume();} }, 8000);
-}
-
-// ─── Particles ─────────────────────────────────────────
-const pCanvas = document.getElementById('pCanvas'), pCtx = pCanvas.getContext('2d');
+const pCanvas = document.getElementById('pCanvas');
+const pCtx    = pCanvas.getContext('2d');
 let pts = [];
 function spawnParticles() {
-  pts = Array.from({ length: 50 }, () => ({
-    x:40+Math.random()*40, y:45+Math.random()*20,
-    vx:(Math.random()-.5)*5, vy:(Math.random()-.5)*5,
-    r:1+Math.random()*3, alpha:1, color:Math.random()>.5?'#FF2D2D':'#FFD700'
-  }));
-  animPts();
+  pts = [];
+  for (let i=0;i<40;i++) pts.push({ x:50+Math.random()*30, y:50+Math.random()*20, vx:(Math.random()-0.5)*4, vy:(Math.random()-0.5)*4, r:1+Math.random()*3, alpha:1, color:Math.random()>0.5?'#FF2D2D':'#FFD700' });
+  animParticles();
 }
-function animPts() {
+function animParticles() {
   pCtx.clearRect(0,0,460,90);
-  pts = pts.filter(p => p.alpha > 0.02);
-  pts.forEach(p => {
-    p.x+=p.vx; p.y+=p.vy; p.vy+=0.06; p.alpha-=0.024;
-    pCtx.beginPath(); pCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    pCtx.fillStyle=p.color; pCtx.globalAlpha=p.alpha; pCtx.fill();
-  });
+  pts = pts.filter(p=>p.alpha>0.02);
+  pts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.alpha-=0.025; p.vy+=0.05; pCtx.beginPath(); pCtx.arc(p.x,p.y,p.r,0,Math.PI*2); pCtx.fillStyle=p.color; pCtx.globalAlpha=p.alpha; pCtx.fill(); });
   pCtx.globalAlpha=1;
-  if (pts.length) requestAnimationFrame(animPts); else pCtx.clearRect(0,0,460,90);
+  if (pts.length>0) requestAnimationFrame(animParticles); else pCtx.clearRect(0,0,460,90);
 }
-
-// ─── Floating hearts ───────────────────────────────────
 function spawnHearts() {
-  const wrap = document.getElementById('alertWrap'), emojis = ['❤️','💛','🔥','⭐','💎'];
-  for (let i = 0; i < 8; i++) setTimeout(() => {
-    const h = document.createElement('div'); h.className = 'heart';
-    h.textContent = emojis[~~(Math.random()*emojis.length)];
-    h.style.cssText = `left:${10+Math.random()*80}%;bottom:10px;animation-duration:${1.5+Math.random()}s;animation-delay:${Math.random()*0.5}s`;
-    wrap.appendChild(h); h.addEventListener('animationend', () => h.remove());
-  }, i * 100);
+  const wrap=document.getElementById('alertWrap'); const emojis=['❤️','💛','🔥','⭐','💎'];
+  for (let i=0;i<8;i++) setTimeout(()=>{ const h=document.createElement('div'); h.className='heart'; h.textContent=emojis[Math.floor(Math.random()*emojis.length)]; h.style.left=(10+Math.random()*80)+'%'; h.style.bottom='10px'; h.style.animationDuration=(1.5+Math.random())+'s'; h.style.animationDelay=(Math.random()*0.5)+'s'; wrap.appendChild(h); h.addEventListener('animationend',()=>h.remove()); },i*100);
 }
 </script>
 </body>

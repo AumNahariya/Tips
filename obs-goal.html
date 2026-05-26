@@ -152,6 +152,13 @@ function connect() {
     try {
       const d = JSON.parse(e.data);
       if (d.type === 'donation') { total = Math.min(total + parseFloat(d.amount), GOAL); updateUI(true); }
+      if (d.type === 'settings_update' && d.section === 'goal') {
+        if (d.key === 'amount') { GOAL = parseFloat(d.value); document.getElementById('tgtAmt').textContent = fmt(GOAL); updateUI(false); }
+        if (d.key === 'title')  document.getElementById('titleTxt').textContent = d.value;
+        if (d.key === 'currentTotal') { total = parseFloat(d.value); updateUI(false); }
+        if (d.key === 'start')  { total = parseFloat(d.value); updateUI(false); }
+        if (d.key === 'color')  { document.getElementById('bar').style.background = COLORS[d.value] || COLORS.red; }
+      }
     } catch(e) {}
   };
   ws.onclose = () => setTimeout(connect, 3000);

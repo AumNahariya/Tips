@@ -18,7 +18,36 @@ const PORT                 = process.env.PORT                  || 3000;
 const RAZORPAY_KEY_ID         = process.env.RAZORPAY_KEY_ID      || 'rzp_test_SsSX9cBE5iMrD0';
 const RAZORPAY_KEY_SECRET     = process.env.RAZORPAY_KEY_SECRET  || 'KdvrvdxcxZzQjr4it5s7VVff';
 const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || 'aumii062303';
+const DASHBOARD_PASSWORD      = process.env.DASHBOARD_PASSWORD   || 'aumii123';
 // ─────────────────────────────────────────────────────────────
+
+// ── In-memory settings store (persists while server runs) ──
+let overlaySettings = {
+  alert: {
+    duration: 12000,
+    position: 'top-center',
+    ttsEnabled: true,
+    ttsLang: 'hi-IN',
+    ttsRate: 0.95,
+    accentColor: '#FF2D2D',
+  },
+  recent: {
+    maxItems: 5,
+    slideMs: 3500,
+    accentColor: '#FF2D2D',
+  },
+  topdono: {
+    accentColor: '#FFD700',
+    visible: true,
+  },
+  goal: {
+    amount: 5000,
+    title: 'Stream Goal',
+    color: 'red',
+    start: 0,
+    currentTotal: 0,
+  }
+};
 
 const app = express();
 const server = http.createServer(app);
@@ -78,6 +107,58 @@ app.use(express.json());
 // Health check
 app.get('/', (req, res) => {
   res.json({ status: 'ok', clients: overlayClients.size });
+});
+
+// Dashboard
+app.get('/dashboard', (req, res) => {
+  const f = path.join(__dirname, 'dashboard.html');
+  if (fs.existsSync(f)) return res.sendFile(f);
+  res.status(404).send('dashboard.html not found');
+});
+
+// Get current settings
+app.get('/api/settings', (req, res) => {
+  const auth = req.headers['x-dashboard-password'];
+  if (auth !== DASHBOARD_PASSWORD) return res.status(401).json({ error: 'Unauthorized' });
+  res.json(overlaySettings);
+});
+
+// Update settings — broadcast to all overlays instantly
+app.post('/api/settings', (req, res) => {
+  const auth = req.headers['x-dashboard-password'];
+  if (auth !== DASHBOARD_PASSWORD) return res.status(401).json({ error: 'Unauthorized' });
+  const { section, key, value } = req.body;
+  if (!overlaySettings[section]) return res.status(400).json({ error: 'Unknown section' });
+  overlaySettings[section][key] = value;
+  // Push update to all overlays in real time
+  broadcast({ type: 'settings_update', section, key, value });
+  console.log(`[settings] ${section}.${key} = ${JSON.stringify(value)}`);
+  res.json({ success: true, settings: overlaySettings });
+});
+
+// Send test alert from dashboard
+app.post('/api/test-alert', (req, res) => {
+  const auth = req.headers['x-dashboard-password'];
+  if (auth !== DASHBOARD_PASSWORD) return res.status(401).json({ error: 'Unauthorized' });
+  const testData = {
+    type: 'donation',
+    name: req.body.name || 'Test Donor',
+    amount: req.body.amount || 99,
+    message: req.body.message || 'Test donation from dashboard!',
+    paymentId: 'test_' + Date.now(),
+    timestamp: new Date().toISOString()
+  };
+  broadcast(testData);
+  res.json({ success: true });
+});
+
+// Verify dashboard password
+app.post('/api/login', (req, res) => {
+  if (req.body.password === DASHBOARD_PASSWORD) {
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ error: 'Wrong password' });
+  }
 });
 
 // Serve overlay files via HTTPS — avoids OBS file:// security restrictions
@@ -176,6 +257,12 @@ app.post('/webhook', (req, res) => {
     const amount  = payment.amount / 100; // paise → rupees
 
     console.log(`[webhook] payment.captured: ₹${amount} from ${name}`);
+
+    // Update goal total
+    overlaySettings.goal.currentTotal = Math.min(
+      (overlaySettings.goal.currentTotal || 0) + amount,
+      overlaySettings.goal.amount
+    );
 
     broadcast({
       type: 'donation',

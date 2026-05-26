@@ -3,995 +3,602 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AUMII — Stream Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<title>Overlay Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-/* ── RESET & BASE ── */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --red:#FF2D2D;--red-dim:rgba(255,45,45,0.18);--red-border:rgba(255,45,45,0.35);
-  --gold:#FFD700;--gold-dim:rgba(255,215,0,0.15);--gold-border:rgba(255,215,0,0.35);
-  --green:#00e676;--green-dim:rgba(0,230,118,0.15);
-  --bg:#080810;--surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.07);
-  --border:rgba(255,255,255,0.09);--text:#f0f0f0;--muted:rgba(255,255,255,0.45);--faint:rgba(255,255,255,0.2);
-  --radius:12px;--trans:180ms cubic-bezier(0.16,1,0.3,1);
+:root {
+  --bg: #0a0a0f; --surface: rgba(255,255,255,0.04); --surface2: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+  --text: #f0f0f0; --muted: rgba(255,255,255,0.4); --hint: rgba(255,255,255,0.2);
+  --red: #FF2D2D; --gold: #FFD700; --green: #00e676;
+  --radius: 12px; --radius-sm: 8px;
 }
-html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-/* ── LOCK SCREEN ── */
-#lockScreen{
-  position:fixed;inset:0;z-index:1000;
-  background:var(--bg);
-  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.5rem;
+/* ── Login ── */
+#loginScreen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 1.5rem;
 }
-.lock-logo{
-  font-family:'Bebas Neue',sans-serif;font-size:3rem;letter-spacing:0.1em;
-  background:linear-gradient(135deg,#fff 30%,var(--red));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+.login-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 2rem; width: 320px; text-align: center;
 }
-.lock-sub{color:var(--muted);font-size:14px;margin-top:-1rem}
-.lock-box{
-  background:var(--surface);border:1px solid var(--border);border-radius:16px;
-  padding:2rem;width:340px;display:flex;flex-direction:column;gap:1rem;
+.login-card h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+.login-card p { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; }
+.login-card input {
+  width: 100%; padding: 10px 14px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+  outline: none; margin-bottom: 10px;
 }
-.lock-box h2{font-size:18px;font-weight:600;text-align:center}
-.lock-input{
-  width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;
-  color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;
-  padding:12px 14px;outline:none;transition:border-color var(--trans),box-shadow var(--trans);
+.login-card input:focus { border-color: var(--red); }
+.btn-primary {
+  width: 100%; padding: 11px; background: var(--red); border: none;
+  border-radius: var(--radius-sm); color: #fff; font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: 0.06em; cursor: pointer; transition: opacity 0.2s;
 }
-.lock-input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(255,45,45,0.12)}
-.lock-btn{
-  width:100%;padding:13px;background:var(--red);border:none;border-radius:10px;
-  color:#fff;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.08em;
-  cursor:pointer;transition:transform var(--trans),box-shadow var(--trans);
-  box-shadow:0 4px 20px rgba(255,45,45,0.35);
-}
-.lock-btn:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(255,45,45,0.5)}
-.lock-btn:active{transform:translateY(0) scale(0.98)}
-.lock-error{color:var(--red);font-size:13px;text-align:center;display:none}
+.btn-primary:hover { opacity: 0.88; }
+.error-msg { font-size: 12px; color: #ff6b6b; margin-top: 8px; display: none; }
 
-/* ── MAIN LAYOUT ── */
-#app{display:none;min-height:100vh}
-.topbar{
-  position:sticky;top:0;z-index:100;
-  background:rgba(8,8,16,0.9);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 1.5rem;height:56px;
+/* ── Main layout ── */
+#app { display: none; }
+.topbar {
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; background: var(--bg); z-index: 10;
 }
-.topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.1em;color:var(--red)}
-.topbar-status{display:flex;align-items:center;gap:10px}
-.ws-dot{width:8px;height:8px;border-radius:50%;background:#555;transition:background 0.3s}
-.ws-dot.live{background:var(--green);animation:livePulse 2s ease-in-out infinite}
-@keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(0,230,118,0.4)}50%{box-shadow:0 0 0 6px rgba(0,230,118,0)}}
-.ws-label{font-size:13px;color:var(--muted)}
-.topbar-right{display:flex;align-items:center;gap:10px}
-.topbar-clients{
-  font-size:12px;color:var(--muted);
-  background:var(--surface);border:1px solid var(--border);border-radius:20px;
-  padding:4px 10px;
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.06em; }
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+  animation: blink 2s ease-in-out infinite;
 }
-.logout-btn{
-  font-size:12px;color:var(--muted);background:none;border:1px solid var(--border);
-  border-radius:8px;padding:5px 12px;cursor:pointer;transition:all var(--trans);
+.status-dot.off { background: #ff4444; animation: none; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.clients-badge {
+  font-size: 12px; color: var(--muted); background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 99px; padding: 2px 10px;
 }
-.logout-btn:hover{color:var(--text);border-color:rgba(255,255,255,0.2)}
+.btn-logout {
+  font-size: 12px; color: var(--muted); background: transparent;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 5px 12px; cursor: pointer;
+}
+.btn-logout:hover { color: var(--text); border-color: var(--border2); }
 
-/* ── TABS ── */
-.tabs{
-  display:flex;gap:2px;padding:1.25rem 1.5rem 0;
-  border-bottom:1px solid var(--border);
-}
-.tab{
-  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;
-  color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;
-  padding:8px 16px;cursor:pointer;transition:all var(--trans);
-  display:flex;align-items:center;gap:6px;
-}
-.tab:hover{color:var(--text)}
-.tab.active{color:var(--text);border-bottom-color:var(--red)}
-.tab-icon{font-size:16px}
+.content { padding: 2rem; max-width: 900px; margin: 0 auto; }
 
-/* ── CONTENT ── */
-.tab-panel{display:none;padding:1.5rem;max-width:900px;margin:0 auto}
-.tab-panel.active{display:block}
+/* ── Section cards ── */
+.section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 1.5rem; overflow: hidden;
+}
+.section-head {
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.section-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 0.08em;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-badge {
+  font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
+  padding: 2px 8px; border-radius: 99px; letter-spacing: 0;
+}
+.badge-red { background: rgba(255,45,45,0.15); color: #ff6b6b; }
+.badge-gold { background: rgba(255,215,0,0.12); color: #FFD700; }
+.badge-green { background: rgba(0,230,118,0.12); color: #00e676; }
+.badge-blue { background: rgba(66,165,245,0.15); color: #42A5F5; }
+.section-body { padding: 18px 20px; display: grid; gap: 14px; }
 
-/* ── SECTION CARD ── */
-.section-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:16px;
-  padding:1.5rem;margin-bottom:1.25rem;position:relative;overflow:hidden;
-}
-.section-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,45,45,0.4),transparent);
-}
-.section-title{
-  font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.08em;
-  color:var(--text);margin-bottom:1.25rem;display:flex;align-items:center;gap:8px;
-}
-.section-badge{
-  font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.06em;
-  text-transform:uppercase;padding:3px 8px;border-radius:20px;
-  background:var(--red-dim);border:1px solid var(--red-border);color:var(--red);
-}
-.section-badge.gold{background:var(--gold-dim);border-color:var(--gold-border);color:var(--gold)}
-.section-badge.blue{background:rgba(0,100,148,0.2);border-color:rgba(0,100,148,0.4);color:#5591c7}
-.section-badge.green{background:var(--green-dim);border-color:rgba(0,230,118,0.35);color:var(--green)}
+/* ── Fields ── */
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+label { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: 0.04em; }
 
-/* ── FORM ROWS ── */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
-.form-row{display:flex;flex-direction:column;gap:6px}
-.form-row label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)}
-.form-row input[type="text"],
-.form-row input[type="number"],
-.form-row select{
-  background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;
-  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
-  padding:10px 12px;outline:none;transition:border-color var(--trans),box-shadow var(--trans);
-  width:100%;
+input[type=text], input[type=number], select {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 14px;
+  padding: 9px 12px; outline: none; width: 100%;
+  transition: border-color 0.2s;
 }
-.form-row input:focus,.form-row select:focus{
-  border-color:var(--red);box-shadow:0 0 0 3px rgba(255,45,45,0.12)
-}
-.form-row select option{background:#1a1a24;color:var(--text)}
+input[type=text]:focus, input[type=number]:focus, select:focus { border-color: var(--red); }
+select option { background: #1a1a2e; }
 
-/* Color picker row */
-.color-row{display:flex;align-items:center;gap:10px}
-.color-swatch{
-  width:36px;height:36px;border-radius:8px;border:2px solid var(--border);
-  cursor:pointer;flex-shrink:0;position:relative;overflow:hidden;
+/* toggle */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; }
+.toggle-label { font-size: 13px; color: var(--text); }
+.toggle {
+  position: relative; width: 38px; height: 22px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 99px; cursor: pointer; transition: background 0.2s;
 }
-.color-swatch input[type="color"]{
-  position:absolute;inset:-4px;width:calc(100%+8px);height:calc(100%+8px);
-  opacity:0;cursor:pointer;border:none;
+.toggle.on { background: var(--red); border-color: var(--red); }
+.toggle::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: rgba(255,255,255,0.5); transition: transform 0.2s, background 0.2s;
 }
-.color-hex{
-  background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;
-  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
-  padding:8px 12px;width:110px;outline:none;
-  transition:border-color var(--trans);
+.toggle.on::after { transform: translateX(16px); background: #fff; }
+
+/* range */
+.range-wrap { display: flex; align-items: center; gap: 10px; }
+input[type=range] {
+  flex: 1; accent-color: var(--red); height: 4px; cursor: pointer;
 }
-.color-hex:focus{border-color:var(--red)}
-.color-preview-bar{
-  flex:1;height:36px;border-radius:8px;
-  background:var(--preview-color,#FF2D2D);
-  box-shadow:0 0 16px var(--preview-color,rgba(255,45,45,0.4));
-  transition:background 0.2s,box-shadow 0.2s;
+.range-val {
+  font-size: 13px; color: var(--text); min-width: 36px; text-align: right;
 }
 
-/* Toggle switch */
-.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
-.toggle-label{font-size:14px;color:var(--text)}
-.toggle-sub{font-size:12px;color:var(--muted);margin-top:1px}
-.toggle{
-  position:relative;width:44px;height:24px;flex-shrink:0;
+/* color picker row */
+.color-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  width: 28px; height: 28px; border-radius: 99px; cursor: pointer;
+  border: 2px solid transparent; transition: transform 0.15s, border-color 0.15s;
 }
-.toggle input{opacity:0;width:0;height:0;position:absolute}
-.toggle-track{
-  position:absolute;inset:0;background:rgba(255,255,255,0.1);
-  border-radius:24px;cursor:pointer;transition:background var(--trans);
-  border:1px solid var(--border);
-}
-.toggle input:checked ~ .toggle-track{background:var(--red)}
-.toggle-thumb{
-  position:absolute;top:3px;left:3px;
-  width:16px;height:16px;border-radius:50%;
-  background:#fff;pointer-events:none;
-  transition:left var(--trans);box-shadow:0 1px 4px rgba(0,0,0,0.3);
-}
-.toggle input:checked ~ .toggle-thumb{left:23px}
+.chip:hover { transform: scale(1.15); }
+.chip.sel { border-color: #fff; transform: scale(1.1); }
 
-/* Range slider */
-.range-row{display:flex;flex-direction:column;gap:6px}
-.range-row label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)}
-.range-wrap{display:flex;align-items:center;gap:10px}
-.range-wrap input[type="range"]{
-  flex:1;-webkit-appearance:none;height:4px;border-radius:4px;
-  background:rgba(255,255,255,0.1);outline:none;cursor:pointer;
+/* action buttons */
+.btn-action {
+  padding: 9px 18px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity 0.2s;
+  border: 1px solid var(--border);
 }
-.range-wrap input[type="range"]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
-  background:var(--red);cursor:pointer;box-shadow:0 0 8px rgba(255,45,45,0.5);
-}
-.range-val{
-  font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);
-  min-width:50px;text-align:right;
-}
+.btn-red { background: rgba(255,45,45,0.15); color: var(--red); border-color: rgba(255,45,45,0.25); }
+.btn-red:hover { background: rgba(255,45,45,0.25); }
+.btn-ghost { background: transparent; color: var(--muted); }
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
 
-/* Divider */
-.divider{height:1px;background:var(--border);margin:1rem 0}
+/* test alert card */
+.test-row { display: flex; gap: 10px; align-items: flex-end; }
+.test-row .field { flex: 1; }
+.test-row .btn-action { height: 38px; white-space: nowrap; }
 
-/* ── BUTTONS ── */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  padding:10px 18px;border-radius:10px;font-family:'DM Sans',sans-serif;
-  font-size:14px;font-weight:600;cursor:pointer;transition:all var(--trans);border:none;
+/* saved toast */
+#toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: rgba(0,230,118,0.15); border: 1px solid rgba(0,230,118,0.3);
+  border-radius: var(--radius-sm); padding: 10px 18px;
+  font-size: 13px; color: var(--green); opacity: 0; pointer-events: none;
+  transition: opacity 0.3s; z-index: 100;
 }
-.btn-primary{background:var(--red);color:#fff;box-shadow:0 2px 12px rgba(255,45,45,0.35)}
-.btn-primary:hover{box-shadow:0 4px 20px rgba(255,45,45,0.5);transform:translateY(-1px)}
-.btn-primary:active{transform:scale(0.98)}
-.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
-.btn-secondary:hover{background:rgba(255,255,255,0.1)}
-.btn-gold{background:linear-gradient(135deg,#FFD700,#FF8C00);color:#000;font-weight:700}
-.btn-gold:hover{box-shadow:0 4px 16px rgba(255,215,0,0.4);transform:translateY(-1px)}
-.btn-green{background:rgba(0,230,118,0.15);color:var(--green);border:1px solid rgba(0,230,118,0.3)}
-.btn-green:hover{background:rgba(0,230,118,0.25)}
-.btn-sm{padding:7px 12px;font-size:13px}
-.btn-full{width:100%}
+#toast.show { opacity: 1; }
 
-/* ── TEST ALERT PANEL ── */
-.test-panel{
-  background:rgba(255,45,45,0.06);border:1px solid rgba(255,45,45,0.2);
-  border-radius:12px;padding:1.25rem;
+/* OBS links */
+.obs-links { display: flex; flex-direction: column; gap: 6px; }
+.obs-link-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 8px 12px;
 }
-.test-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:0.75rem}
-@media(max-width:600px){.test-fields{grid-template-columns:1fr}}
-
-/* ── TOAST ── */
-#toast{
-  position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;
-  background:rgba(20,20,30,0.95);border:1px solid var(--border);
-  border-radius:10px;padding:12px 18px;
-  font-size:14px;color:var(--text);
-  display:flex;align-items:center;gap:10px;
-  transform:translateY(80px);opacity:0;
-  transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  max-width:320px;
+.obs-link-label { font-size: 12px; color: var(--muted); min-width: 100px; }
+.obs-link-url { font-size: 12px; color: var(--hint); font-family: monospace; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-copy {
+  font-size: 11px; color: var(--muted); background: transparent;
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 3px 8px; cursor: pointer; white-space: nowrap;
 }
-#toast.show{transform:translateY(0);opacity:1}
-#toast.success .toast-dot{background:var(--green)}
-#toast.error .toast-dot{background:var(--red)}
-.toast-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
-
-/* ── LINKS PANEL ── */
-.links-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
-@media(max-width:600px){.links-grid{grid-template-columns:1fr}}
-.link-card{
-  background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;
-  padding:1rem;display:flex;flex-direction:column;gap:4px;
-}
-.link-label{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:600}
-.link-url{font-size:12px;color:var(--red);word-break:break-all}
-.link-copy{
-  font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);
-  border-radius:6px;padding:4px 8px;cursor:pointer;margin-top:4px;
-  transition:all var(--trans);align-self:flex-start;
-}
-.link-copy:hover{color:var(--text);border-color:rgba(255,255,255,0.2)}
-
-/* ── GOAL PROGRESS ── */
-.goal-preview{
-  background:rgba(8,8,16,0.6);border:1px solid var(--border);border-radius:10px;
-  padding:1rem;margin-top:0.75rem;
-}
-.goal-track{
-  background:rgba(255,255,255,0.06);border-radius:20px;height:12px;overflow:hidden;margin-top:8px;
-}
-.goal-fill{
-  height:100%;border-radius:20px;
-  background:linear-gradient(90deg,var(--red),var(--gold));
-  transition:width 0.6s cubic-bezier(0.34,1.2,0.64,1);
-}
-.goal-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px}
-
-/* ── STATUS CARDS ── */
-.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:1.25rem}
-@media(max-width:500px){.status-grid{grid-template-columns:1fr 1fr}}
-.stat-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;
-}
-.stat-val{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold)}
-.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em}
-
-/* ── RECENT LIST ── */
-.recent-list{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto}
-.recent-list::-webkit-scrollbar{width:4px}
-.recent-list::-webkit-scrollbar-track{background:transparent}
-.recent-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-.recent-item{
-  display:flex;align-items:center;gap:10px;
-  background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:8px 12px;
-  animation:fadeUp 0.3s ease both;
-}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.ri-avatar{
-  width:32px;height:32px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,var(--red),#ff6b6b);
-  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;
-}
-.ri-info{flex:1;min-width:0}
-.ri-name{font-size:13px;font-weight:500}
-.ri-msg{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ri-amt{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold)}
-.empty-msg{text-align:center;color:var(--faint);font-size:13px;padding:1.5rem}
-
-/* ── POSITION PICKER ── */
-.pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:200px}
-.pos-btn{
-  aspect-ratio:1;border-radius:6px;border:1px solid var(--border);
-  background:var(--surface);cursor:pointer;transition:all var(--trans);
-  display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);
-}
-.pos-btn:hover,.pos-btn.active{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}
+.btn-copy:hover { color: var(--text); }
+.btn-copy.copied { color: var(--green); border-color: rgba(0,230,118,0.3); }
 </style>
 </head>
 <body>
 
-<!-- ── LOCK SCREEN ── -->
-<div id="lockScreen">
-  <div class="lock-logo">AUMII</div>
-  <div class="lock-sub">Stream Control Dashboard</div>
-  <div class="lock-box">
-    <h2>🔒 Enter Password</h2>
-    <input type="password" class="lock-input" id="pwInput" placeholder="Dashboard password..." autocomplete="current-password"/>
-    <button class="lock-btn" onclick="doLogin()">UNLOCK DASHBOARD</button>
-    <div class="lock-error" id="lockError">❌ Wrong password. Try again.</div>
+<!-- Login -->
+<div id="loginScreen">
+  <div class="login-card">
+    <h1>OVERLAY DASHBOARD</h1>
+    <p>Enter your password to manage overlays</p>
+    <input type="password" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')login()"/>
+    <button class="btn-primary" onclick="login()">ENTER</button>
+    <div class="error-msg" id="loginErr">Wrong password</div>
   </div>
 </div>
 
-<!-- ── MAIN APP ── -->
+<!-- Main app -->
 <div id="app">
-  <!-- Topbar -->
   <div class="topbar">
-    <div class="topbar-logo">AUMII</div>
-    <div class="topbar-status">
-      <div class="ws-dot" id="wsDot"></div>
-      <span class="ws-label" id="wsLabel">Connecting...</span>
+    <div class="topbar-left">
+      <div class="topbar-title">OVERLAY DASHBOARD</div>
+      <div class="status-dot" id="statusDot"></div>
+      <div class="clients-badge" id="clientsBadge">0 overlays</div>
     </div>
-    <div class="topbar-right">
-      <span class="topbar-clients" id="clientsCount">0 overlays</span>
-      <button class="logout-btn" onclick="doLogout()">Logout</button>
-    </div>
+    <button class="btn-logout" onclick="logout()">Log out</button>
   </div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('overview')" data-tab="overview"><span class="tab-icon">🏠</span> Overview</button>
-    <button class="tab" onclick="switchTab('alert')" data-tab="alert"><span class="tab-icon">🔔</span> Alert</button>
-    <button class="tab" onclick="switchTab('recent')" data-tab="recent"><span class="tab-icon">💸</span> Recent</button>
-    <button class="tab" onclick="switchTab('topdono')" data-tab="topdono"><span class="tab-icon">👑</span> Top Donor</button>
-    <button class="tab" onclick="switchTab('goal')" data-tab="goal"><span class="tab-icon">🎯</span> Goal</button>
-    <button class="tab" onclick="switchTab('links')" data-tab="links"><span class="tab-icon">🔗</span> OBS Links</button>
-  </div>
-
-  <!-- ── OVERVIEW TAB ── -->
-  <div class="tab-panel active" id="tab-overview">
-    <div class="status-grid">
-      <div class="stat-card">
-        <div class="stat-val" id="st-total">₹0</div>
-        <div class="stat-label">Total Raised</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" id="st-count">0</div>
-        <div class="stat-label">Donations</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" id="st-top">₹0</div>
-        <div class="stat-label">Top Donation</div>
-      </div>
-    </div>
+  <div class="content">
 
     <!-- Test Alert -->
-    <div class="section-card">
-      <div class="section-title">🚀 Send Test Alert <span class="section-badge">LIVE TEST</span></div>
-      <div class="test-panel">
-        <div class="test-fields">
-          <div class="form-row">
-            <label>Donor Name</label>
-            <input type="text" id="testName" placeholder="Rahul Sharma" value="Test Donor"/>
-          </div>
-          <div class="form-row">
-            <label>Amount (₹)</label>
-            <input type="number" id="testAmt" placeholder="99" value="251"/>
-          </div>
-          <div class="form-row">
-            <label>Message</label>
-            <input type="text" id="testMsg" placeholder="Love the stream! 🔥" value="Test donation! 🔥"/>
-          </div>
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">TEST ALERT <span class="section-badge badge-red">Fire now</span></div>
+      </div>
+      <div class="section-body">
+        <div class="test-row">
+          <div class="field"><label>Donor name</label><input type="text" id="testName" value="Rahul Sharma"/></div>
+          <div class="field"><label>Amount (₹)</label><input type="number" id="testAmt" value="199"/></div>
+          <div class="field"><label>Message</label><input type="text" id="testMsg" value="Keep it up! 🔥"/></div>
+          <button class="btn-action btn-red" onclick="sendTest()">Send Test Alert</button>
         </div>
-        <button class="btn btn-primary btn-full" onclick="sendTestAlert()">
-          ⚡ Fire Test Alert to OBS
-        </button>
       </div>
     </div>
 
-    <!-- Recent Donations List -->
-    <div class="section-card">
-      <div class="section-title">💰 Recent Donations</div>
-      <div class="recent-list" id="recentList">
-        <div class="empty-msg">No donations yet. Waiting for your viewers! 🎉</div>
+    <!-- Donation Alert settings -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">DONATION ALERT <span class="section-badge badge-red">obs-overlay</span></div>
       </div>
-    </div>
-  </div>
-
-  <!-- ── ALERT TAB ── -->
-  <div class="tab-panel" id="tab-alert">
-    <div class="section-card">
-      <div class="section-title">🔔 Donation Alert Overlay <span class="section-badge">LIVE</span></div>
-
-      <div class="form-grid">
-        <div class="range-row">
-          <label>Alert Duration (seconds)</label>
-          <div class="range-wrap">
-            <input type="range" id="alertDuration" min="5000" max="30000" step="1000" value="12000"
-              oninput="updateRangeDisplay('alertDuration','alertDurationVal',v=>v/1000+'s');setSetting('alert','duration',+this.value)"/>
-            <span class="range-val" id="alertDurationVal">12s</span>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field">
+            <label>Alert duration (seconds)</label>
+            <div class="range-wrap">
+              <input type="range" min="5" max="30" step="1" id="alertDuration" oninput="rangeOut(this,'alertDurationVal');save('alert','duration',this.value*1000)"/>
+              <span class="range-val" id="alertDurationVal">12s</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Position on screen</label>
+            <select id="alertPosition" onchange="save('alert','position',this.value)">
+              <option value="top-center">Top center</option>
+              <option value="top-left">Top left</option>
+              <option value="top-right">Top right</option>
+              <option value="bottom-center">Bottom center</option>
+              <option value="bottom-left">Bottom left</option>
+              <option value="bottom-right">Bottom right</option>
+            </select>
           </div>
         </div>
-        <div class="range-row">
-          <label>TTS Speed</label>
-          <div class="range-wrap">
-            <input type="range" id="ttsRate" min="0.5" max="2" step="0.05" value="0.95"
-              oninput="updateRangeDisplay('ttsRate','ttsRateVal',v=>parseFloat(v).toFixed(2)+'x');setSetting('alert','ttsRate',+this.value)"/>
-            <span class="range-val" id="ttsRateVal">0.95x</span>
+        <div class="field-row">
+          <div class="field">
+            <div class="toggle-row">
+              <span class="toggle-label">Text-to-speech (TTS)</span>
+              <div class="toggle on" id="ttsToggle" onclick="toggleField(this,'alert','ttsEnabled')"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>TTS Language</label>
+            <select id="ttsLang" onchange="save('alert','ttsLang',this.value)">
+              <option value="hi-IN">Hindi (hi-IN)</option>
+              <option value="en-IN">Indian English (en-IN)</option>
+              <option value="en-US">US English (en-US)</option>
+              <option value="en-GB">British English (en-GB)</option>
+            </select>
           </div>
         </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="form-grid">
-        <div class="form-row">
-          <label>TTS Language</label>
-          <select id="ttsLang" onchange="setSetting('alert','ttsLang',this.value)">
-            <option value="hi-IN">Hindi (hi-IN)</option>
-            <option value="en-IN">English India (en-IN)</option>
-            <option value="en-US">English US (en-US)</option>
-            <option value="en-GB">English UK (en-GB)</option>
-            <option value="mr-IN">Marathi (mr-IN)</option>
-            <option value="ta-IN">Tamil (ta-IN)</option>
-            <option value="te-IN">Telugu (te-IN)</option>
-            <option value="bn-IN">Bengali (bn-IN)</option>
-            <option value="gu-IN">Gujarati (gu-IN)</option>
-            <option value="kn-IN">Kannada (kn-IN)</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);display:block;margin-bottom:8px">Alert Position</label>
-          <div class="pos-grid" id="posGrid">
-            <button class="pos-btn" data-pos="top-left" onclick="setPosition('top-left')">↖</button>
-            <button class="pos-btn active" data-pos="top-center" onclick="setPosition('top-center')">↑</button>
-            <button class="pos-btn" data-pos="top-right" onclick="setPosition('top-right')">↗</button>
-            <button class="pos-btn" style="visibility:hidden"></button>
-            <button class="pos-btn" style="visibility:hidden"></button>
-            <button class="pos-btn" style="visibility:hidden"></button>
-            <button class="pos-btn" data-pos="bottom-left" onclick="setPosition('bottom-left')">↙</button>
-            <button class="pos-btn" data-pos="bottom-center" onclick="setPosition('bottom-center')">↓</button>
-            <button class="pos-btn" data-pos="bottom-right" onclick="setPosition('bottom-right')">↘</button>
+        <div class="field-row">
+          <div class="field">
+            <label>TTS Speed</label>
+            <div class="range-wrap">
+              <input type="range" min="0.5" max="1.5" step="0.05" id="ttsRate" oninput="rangeOut(this,'ttsRateVal');save('alert','ttsRate',parseFloat(this.value))"/>
+              <span class="range-val" id="ttsRateVal">0.95x</span>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="form-row">
-        <label>Alert Accent Color</label>
-        <div class="color-row">
-          <div class="color-swatch" id="alertColorSwatch" style="background:#FF2D2D">
-            <input type="color" id="alertColorPicker" value="#FF2D2D"
-              oninput="syncColor('alert','accentColor',this.value)"/>
+          <div class="field">
+            <label>Accent color</label>
+            <div class="color-chips" id="alertColorChips"></div>
           </div>
-          <input type="text" class="color-hex" id="alertColorHex" value="#FF2D2D" maxlength="7"
-            onchange="syncColorFromHex('alert','accentColor','alertColorPicker','alertColorSwatch',this.value)"/>
-          <div class="color-preview-bar" id="alertColorBar" style="--preview-color:#FF2D2D"></div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="toggle-row">
-        <div>
-          <div class="toggle-label">Text-to-Speech</div>
-          <div class="toggle-sub">Read donor name & message aloud</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="ttsEnabled" checked onchange="setSetting('alert','ttsEnabled',this.checked)"/>
-          <div class="toggle-track"></div>
-          <div class="toggle-thumb"></div>
-        </label>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── RECENT TAB ── -->
-  <div class="tab-panel" id="tab-recent">
-    <div class="section-card">
-      <div class="section-title">💸 Recent Donations Overlay <span class="section-badge">LIVE</span></div>
-
-      <div class="form-grid">
-        <div class="range-row">
-          <label>Max Items Shown</label>
-          <div class="range-wrap">
-            <input type="range" id="recentMax" min="1" max="10" step="1" value="5"
-              oninput="updateRangeDisplay('recentMax','recentMaxVal',v=>v+' items');setSetting('recent','maxItems',+this.value)"/>
-            <span class="range-val" id="recentMaxVal">5 items</span>
-          </div>
-        </div>
-        <div class="range-row">
-          <label>Slide Interval</label>
-          <div class="range-wrap">
-            <input type="range" id="slideMs" min="1500" max="8000" step="500" value="3500"
-              oninput="updateRangeDisplay('slideMs','slideMsVal',v=>(v/1000).toFixed(1)+'s');setSetting('recent','slideMs',+this.value)"/>
-            <span class="range-val" id="slideMsVal">3.5s</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="form-row">
-        <label>Accent Color</label>
-        <div class="color-row">
-          <div class="color-swatch" id="recentColorSwatch" style="background:#FF2D2D">
-            <input type="color" id="recentColorPicker" value="#FF2D2D"
-              oninput="syncColor('recent','accentColor',this.value)"/>
-          </div>
-          <input type="text" class="color-hex" id="recentColorHex" value="#FF2D2D" maxlength="7"
-            onchange="syncColorFromHex('recent','accentColor','recentColorPicker','recentColorSwatch',this.value)"/>
-          <div class="color-preview-bar" id="recentColorBar" style="--preview-color:#FF2D2D"></div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ── TOP DONOR TAB ── -->
-  <div class="tab-panel" id="tab-topdono">
-    <div class="section-card">
-      <div class="section-title">👑 Top Donation Overlay <span class="section-badge gold">GOLD</span></div>
-
-      <div class="toggle-row" style="margin-bottom:1rem">
-        <div>
-          <div class="toggle-label">Show Overlay</div>
-          <div class="toggle-sub">Toggle top donor widget on/off in OBS</div>
-        </div>
-        <label class="toggle">
-          <input type="checkbox" id="topdoVisible" checked onchange="setSetting('topdono','visible',this.checked)"/>
-          <div class="toggle-track"></div>
-          <div class="toggle-thumb"></div>
-        </label>
+    <!-- Recent Donations settings -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">RECENT DONATIONS <span class="section-badge badge-blue">obs-recent</span></div>
       </div>
-
-      <div class="divider"></div>
-
-      <div class="form-row">
-        <label>Crown / Accent Color</label>
-        <div class="color-row">
-          <div class="color-swatch" id="topColorSwatch" style="background:#FFD700">
-            <input type="color" id="topColorPicker" value="#FFD700"
-              oninput="syncColor('topdono','accentColor',this.value)"/>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field">
+            <label>Max donations shown</label>
+            <div class="range-wrap">
+              <input type="range" min="1" max="5" step="1" id="recentMax" oninput="rangeOut(this,'recentMaxVal');save('recent','maxItems',parseInt(this.value))"/>
+              <span class="range-val" id="recentMaxVal">5</span>
+            </div>
           </div>
-          <input type="text" class="color-hex" id="topColorHex" value="#FFD700" maxlength="7"
-            onchange="syncColorFromHex('topdono','accentColor','topColorPicker','topColorSwatch',this.value)"/>
-          <div class="color-preview-bar" id="topColorBar" style="--preview-color:#FFD700"></div>
+          <div class="field">
+            <label>Slide speed (seconds each)</label>
+            <div class="range-wrap">
+              <input type="range" min="2" max="8" step="0.5" id="slideMs" oninput="rangeOut(this,'slideMsVal');save('recent','slideMs',this.value*1000)"/>
+              <span class="range-val" id="slideMsVal">3.5s</span>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Accent color</label>
+          <div class="color-chips" id="recentColorChips"></div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ── GOAL TAB ── -->
-  <div class="tab-panel" id="tab-goal">
-    <div class="section-card">
-      <div class="section-title">🎯 Stream Goal Overlay <span class="section-badge blue">GOAL</span></div>
-
-      <div class="form-grid">
-        <div class="form-row">
-          <label>Goal Title</label>
-          <input type="text" id="goalTitle" value="Stream Goal" placeholder="e.g. New Mic Fund"
-            onchange="setSetting('goal','title',this.value)"/>
-        </div>
-        <div class="form-row">
-          <label>Goal Amount (₹)</label>
-          <input type="number" id="goalAmount" value="5000" min="100"
-            onchange="setSetting('goal','amount',+this.value);updateGoalPreview()"/>
-        </div>
+    <!-- Top Donation settings -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">TOP DONATION <span class="section-badge badge-gold">obs-topdono</span></div>
       </div>
-
-      <div class="divider"></div>
-
-      <div class="form-row" style="margin-bottom:1rem">
-        <label>Current Progress (₹) — manual override</label>
-        <input type="number" id="goalCurrent" value="0" min="0"
-          onchange="setSetting('goal','currentTotal',+this.value);updateGoalPreview()"/>
-      </div>
-
-      <!-- Goal preview -->
-      <div class="goal-preview">
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
-          <span id="gpTitle" style="color:var(--muted)">Stream Goal</span>
-          <span id="gpPct" style="color:var(--gold);font-weight:600">0%</span>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field">
+            <div class="toggle-row">
+              <span class="toggle-label">Visible on stream</span>
+              <div class="toggle on" id="topVisToggle" onclick="toggleField(this,'topdono','visible')"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Accent color</label>
+            <div class="color-chips" id="topColorChips"></div>
+          </div>
         </div>
-        <div class="goal-track">
-          <div class="goal-fill" id="gpBar" style="width:0%"></div>
-        </div>
-        <div class="goal-labels">
-          <span id="gpCurrent">₹0</span>
-          <span id="gpGoal">₹5000</span>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="form-row">
-        <label>Bar Color</label>
-        <select id="goalColor" onchange="setSetting('goal','color',this.value)">
-          <option value="red">🔴 Red → Gold (Default)</option>
-          <option value="green">🟢 Green</option>
-          <option value="blue">🔵 Blue</option>
-          <option value="purple">🟣 Purple</option>
-          <option value="gold">🟡 All Gold</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── OBS LINKS TAB ── -->
-  <div class="tab-panel" id="tab-links">
-    <div class="section-card">
-      <div class="section-title">🔗 OBS Browser Source URLs</div>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:1rem">
-        Copy these URLs and paste them in OBS → Sources → Browser Source. Each overlay connects automatically.
-      </p>
-      <div class="links-grid" id="linksGrid">
-        <!-- populated by JS -->
       </div>
     </div>
 
-    <div class="section-card">
-      <div class="section-title">📋 Setup Checklist</div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <div style="display:flex;align-items:flex-start;gap:10px;font-size:14px">
-          <span style="color:var(--green);flex-shrink:0;margin-top:1px">✓</span>
-          <span>Server is running and reachable</span>
+    <!-- Goal settings -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">DONATION GOAL <span class="section-badge badge-green">obs-goal</span></div>
+      </div>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field">
+            <label>Goal amount (₹)</label>
+            <input type="number" id="goalAmount" placeholder="5000" onchange="save('goal','amount',parseFloat(this.value))"/>
+          </div>
+          <div class="field">
+            <label>Goal title</label>
+            <input type="text" id="goalTitle" placeholder="Stream Goal" oninput="save('goal','title',this.value)"/>
+          </div>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:10px;font-size:14px">
-          <span style="color:var(--green);flex-shrink:0;margin-top:1px">✓</span>
-          <span>Add each URL above as a Browser Source in OBS (1280×180 for overlays, 1280×720 for goal)</span>
+        <div class="field-row">
+          <div class="field">
+            <label>Starting amount (₹)</label>
+            <input type="number" id="goalStart" placeholder="0" onchange="save('goal','start',parseFloat(this.value))"/>
+          </div>
+          <div class="field">
+            <label>Bar color</label>
+            <div class="color-chips" id="goalColorChips"></div>
+          </div>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:10px;font-size:14px">
-          <span style="color:var(--gold);flex-shrink:0;margin-top:1px">→</span>
-          <span>Set Razorpay Webhook URL in your Razorpay Dashboard to: <code style="color:var(--red);font-size:12px">[server-url]/webhook</code></span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:10px;font-size:14px">
-          <span style="color:var(--gold);flex-shrink:0;margin-top:1px">→</span>
-          <span>Share <code style="color:var(--red);font-size:12px">[server-url]/donate</code> with your viewers to accept donations</span>
+        <div class="field">
+          <div class="toggle-row">
+            <span class="toggle-label" style="font-size:12px;color:var(--muted)">Reset goal progress for new stream</span>
+            <button class="btn-action btn-ghost" onclick="resetGoal()" style="font-size:12px;padding:6px 14px;">Reset to ₹0</button>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- OBS Links -->
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">OBS BROWSER SOURCE URLS</div>
+      </div>
+      <div class="section-body">
+        <div class="obs-links" id="obsLinks"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- TOAST -->
-<div id="toast"><div class="toast-dot"></div><span id="toastMsg"></span></div>
+<div id="toast">Saved!</div>
 
 <script>
-// ── CONFIG ──────────────────────────────────────
-// This dashboard is served FROM the server at /dashboard
-// so all API calls use relative paths automatically.
-// Password is verified against server /api/login.
-// ────────────────────────────────────────────────
-
-let AUTH_PW  = '';
+const BASE = location.origin;
+let password = '';
 let settings = {};
-let wsConn   = null;
-let donations = [];
-let totalRaised = 0, donationCount = 0, topDonation = 0;
+let pollTimer = null;
 
-// ── LOGIN ──
-function doLogin() {
+const COLORS = [
+  { name:'red',    hex:'#FF2D2D' },
+  { name:'gold',   hex:'#FFD700' },
+  { name:'green',  hex:'#00e676' },
+  { name:'blue',   hex:'#42A5F5' },
+  { name:'purple', hex:'#CE93D8' },
+  { name:'pink',   hex:'#F48FB1' },
+  { name:'white',  hex:'#ffffff' },
+];
+
+/* ── Auth ── */
+async function login() {
   const pw = document.getElementById('pwInput').value.trim();
-  if (!pw) return;
-  fetch('/api/login', {
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({password:pw})
-  })
-  .then(r => r.json())
-  .then(d => {
-    if (d.success) {
-      AUTH_PW = pw;
-      document.getElementById('lockScreen').style.display = 'none';
+  try {
+    const r = await fetch('/api/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({password: pw})
+    });
+    if (r.ok) {
+      password = pw;
+      document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
-      loadSettings();
-      connectWS();
-      populateLinks();
+      await loadSettings();
+      startPolling();
     } else {
-      showLockError();
+      document.getElementById('loginErr').style.display = 'block';
     }
-  })
-  .catch(() => {
-    // Fallback: allow offline demo with 'aumii123'
-    if (pw === 'aumii123') {
-      AUTH_PW = pw;
-      document.getElementById('lockScreen').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      loadSettings();
-      connectWS();
-      populateLinks();
-    } else {
-      showLockError();
-    }
-  });
+  } catch(e) { document.getElementById('loginErr').style.display = 'block'; }
 }
 
-document.getElementById('pwInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
-
-function showLockError() {
-  const el = document.getElementById('lockError');
-  el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 3000);
-}
-
-function doLogout() {
-  AUTH_PW = '';
+function logout() {
+  password = '';
+  clearInterval(pollTimer);
+  document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
-  document.getElementById('lockScreen').style.display = 'flex';
   document.getElementById('pwInput').value = '';
-  if (wsConn) { wsConn.close(); wsConn = null; }
 }
 
-// ── SETTINGS LOAD ──
-function loadSettings() {
-  fetch('/api/settings', {headers:{'x-dashboard-password':AUTH_PW}})
-  .then(r => r.json())
-  .then(s => {
-    settings = s;
-    applySettingsToUI(s);
-  })
-  .catch(() => {
-    // Demo defaults
-    settings = {
-      alert:{duration:12000,position:'top-center',ttsEnabled:true,ttsLang:'hi-IN',ttsRate:0.95,accentColor:'#FF2D2D'},
-      recent:{maxItems:5,slideMs:3500,accentColor:'#FF2D2D'},
-      topdono:{accentColor:'#FFD700',visible:true},
-      goal:{amount:5000,title:'Stream Goal',color:'red',start:0,currentTotal:0}
-    };
-    applySettingsToUI(settings);
-  });
+/* ── Load settings ── */
+async function loadSettings() {
+  try {
+    const r = await fetch('/api/settings', { headers:{'x-dashboard-password': password} });
+    settings = await r.json();
+    applyToUI();
+    buildObsLinks();
+  } catch(e) { console.error(e); }
 }
 
-function applySettingsToUI(s) {
+function applyToUI() {
+  const a = settings.alert;
+  const re = settings.recent;
+  const g = settings.goal;
+
   // Alert
-  if (s.alert) {
-    setRangeVal('alertDuration', s.alert.duration);
-    updateRangeDisplay('alertDuration','alertDurationVal',v=>v/1000+'s');
-    setRangeVal('ttsRate', s.alert.ttsRate);
-    updateRangeDisplay('ttsRate','ttsRateVal',v=>parseFloat(v).toFixed(2)+'x');
-    document.getElementById('ttsLang').value = s.alert.ttsLang || 'hi-IN';
-    document.getElementById('ttsEnabled').checked = !!s.alert.ttsEnabled;
-    applyColor('alertColorPicker','alertColorSwatch','alertColorHex','alertColorBar', s.alert.accentColor||'#FF2D2D');
-    setActivePos(s.alert.position||'top-center');
-  }
+  const durSec = Math.round(a.duration / 1000);
+  document.getElementById('alertDuration').value = durSec;
+  document.getElementById('alertDurationVal').textContent = durSec + 's';
+  document.getElementById('alertPosition').value = a.position || 'top-center';
+  setToggle('ttsToggle', a.ttsEnabled);
+  document.getElementById('ttsLang').value = a.ttsLang || 'hi-IN';
+  document.getElementById('ttsRate').value = a.ttsRate || 0.95;
+  document.getElementById('ttsRateVal').textContent = (a.ttsRate||0.95) + 'x';
+  buildColorChips('alertColorChips', 'alert', 'accentColor', a.accentColor);
+
   // Recent
-  if (s.recent) {
-    setRangeVal('recentMax', s.recent.maxItems);
-    updateRangeDisplay('recentMax','recentMaxVal',v=>v+' items');
-    setRangeVal('slideMs', s.recent.slideMs);
-    updateRangeDisplay('slideMs','slideMsVal',v=>(v/1000).toFixed(1)+'s');
-    applyColor('recentColorPicker','recentColorSwatch','recentColorHex','recentColorBar', s.recent.accentColor||'#FF2D2D');
-  }
-  // Top
-  if (s.topdono) {
-    document.getElementById('topdoVisible').checked = s.topdono.visible !== false;
-    applyColor('topColorPicker','topColorSwatch','topColorHex','topColorBar', s.topdono.accentColor||'#FFD700');
-  }
+  document.getElementById('recentMax').value = re.maxItems || 5;
+  document.getElementById('recentMaxVal').textContent = re.maxItems || 5;
+  document.getElementById('slideMs').value = (re.slideMs||3500) / 1000;
+  document.getElementById('slideMsVal').textContent = ((re.slideMs||3500)/1000) + 's';
+  buildColorChips('recentColorChips', 'recent', 'accentColor', re.accentColor);
+
+  // Top dono
+  setToggle('topVisToggle', settings.topdono.visible !== false);
+  buildColorChips('topColorChips', 'topdono', 'accentColor', settings.topdono.accentColor);
+
   // Goal
-  if (s.goal) {
-    document.getElementById('goalTitle').value = s.goal.title||'Stream Goal';
-    document.getElementById('goalAmount').value = s.goal.amount||5000;
-    document.getElementById('goalCurrent').value = s.goal.currentTotal||0;
-    document.getElementById('goalColor').value = s.goal.color||'red';
-    updateGoalPreview();
-  }
+  document.getElementById('goalAmount').value = g.amount || 5000;
+  document.getElementById('goalTitle').value  = g.title  || 'Stream Goal';
+  document.getElementById('goalStart').value  = g.start  || 0;
+  buildColorChips('goalColorChips', 'goal', 'color', g.color || 'red', true);
 }
 
-function setRangeVal(id, val) {
+/* ── Color chips ── */
+function buildColorChips(containerId, section, key, currentVal, nameMode) {
+  const wrap = document.getElementById(containerId);
+  wrap.innerHTML = '';
+  COLORS.forEach(c => {
+    const chip = document.createElement('div');
+    chip.className = 'chip' + ((nameMode ? c.name === currentVal : c.hex.toLowerCase() === (currentVal||'').toLowerCase()) ? ' sel' : '');
+    chip.style.background = c.hex;
+    chip.title = c.name;
+    chip.onclick = () => {
+      wrap.querySelectorAll('.chip').forEach(ch => ch.classList.remove('sel'));
+      chip.classList.add('sel');
+      save(section, key, nameMode ? c.name : c.hex);
+    };
+    wrap.appendChild(chip);
+  });
+}
+
+/* ── Toggle ── */
+function setToggle(id, val) {
   const el = document.getElementById(id);
-  if (el) el.value = val;
+  el.classList.toggle('on', !!val);
+}
+function toggleField(el, section, key) {
+  const newVal = !el.classList.contains('on');
+  el.classList.toggle('on', newVal);
+  save(section, key, newVal);
 }
 
-// ── SEND SETTING ──
-function setSetting(section, key, value) {
-  fetch('/api/settings', {
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-dashboard-password':AUTH_PW},
-    body:JSON.stringify({section,key,value})
-  })
-  .then(r=>r.json())
-  .then(d=>{ if(d.success) showToast(`✓ ${section}.${key} updated`,'success'); })
-  .catch(()=>showToast(`⚠ Server not reachable`,'error'));
+/* ── Range ── */
+function rangeOut(el, outId) {
+  const v = parseFloat(el.value);
+  const id = el.id;
+  let txt = v;
+  if (id === 'alertDuration') txt = v + 's';
+  else if (id === 'ttsRate')  txt = v + 'x';
+  else if (id === 'slideMs')  txt = v + 's';
+  document.getElementById(outId).textContent = txt;
 }
 
-// ── TEST ALERT ──
-function sendTestAlert() {
-  const name = document.getElementById('testName').value.trim() || 'Test Donor';
-  const amount = +document.getElementById('testAmt').value || 99;
-  const message = document.getElementById('testMsg').value.trim();
-  fetch('/api/test-alert', {
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-dashboard-password':AUTH_PW},
-    body:JSON.stringify({name,amount,message})
-  })
-  .then(r=>r.json())
-  .then(d=>{ if(d.success) showToast('🚀 Test alert sent to OBS!','success'); })
-  .catch(()=>showToast('⚠ Could not reach server','error'));
+/* ── Save setting ── */
+async function save(section, key, value) {
+  try {
+    await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-dashboard-password': password },
+      body: JSON.stringify({ section, key, value })
+    });
+    showToast();
+  } catch(e) { console.error(e); }
 }
 
-// ── WEBSOCKET (for receiving real donations) ──
-function connectWS() {
-  const proto = location.protocol==='https:'?'wss:':'ws:';
-  const url = proto+'//'+location.host+'/ws';
-  wsConn = new WebSocket(url);
-
-  wsConn.onopen = () => {
-    document.getElementById('wsDot').className = 'ws-dot live';
-    document.getElementById('wsLabel').textContent = 'Connected';
-  };
-
-  wsConn.onmessage = (e) => {
-    try {
-      const d = JSON.parse(e.data);
-      if (d.type === 'donation') handleDonation(d);
-      if (d.type === 'connected' && d.clients !== undefined) {
-        document.getElementById('clientsCount').textContent = d.clients + ' overlay' + (d.clients===1?'':'s');
-      }
-    } catch(err) {}
-  };
-
-  wsConn.onclose = () => {
-    document.getElementById('wsDot').className = 'ws-dot';
-    document.getElementById('wsLabel').textContent = 'Reconnecting...';
-    setTimeout(() => { if (AUTH_PW) connectWS(); }, 3000);
-  };
-}
-
-function handleDonation(d) {
-  donations.unshift(d);
-  if (donations.length > 50) donations.pop();
-  donationCount++;
-  totalRaised += d.amount;
-  if (d.amount > topDonation) topDonation = d.amount;
-  updateStats();
-  addToRecentList(d);
-  showToast(`💰 ₹${d.amount} from ${d.name}!`, 'success');
-}
-
-function updateStats() {
-  document.getElementById('st-total').textContent = '₹'+totalRaised.toLocaleString('en-IN');
-  document.getElementById('st-count').textContent = donationCount;
-  document.getElementById('st-top').textContent   = '₹'+topDonation.toLocaleString('en-IN');
-}
-
-function addToRecentList(d) {
-  const list = document.getElementById('recentList');
-  if (list.querySelector('.empty-msg')) list.innerHTML = '';
-  const initials = d.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
-  const item = document.createElement('div');
-  item.className = 'recent-item';
-  item.innerHTML = `
-    <div class="ri-avatar">${initials}</div>
-    <div class="ri-info">
-      <div class="ri-name">${d.name}</div>
-      <div class="ri-msg">${d.message||'No message'}</div>
-    </div>
-    <div class="ri-amt">₹${d.amount}</div>`;
-  list.prepend(item);
-}
-
-// ── COLOR HELPERS ──
-function syncColor(section, key, hex) {
-  const swatchId = section==='alert'?'alertColorSwatch':section==='recent'?'recentColorSwatch':'topColorSwatch';
-  const hexId    = section==='alert'?'alertColorHex':section==='recent'?'recentColorHex':'topColorHex';
-  const barId    = section==='alert'?'alertColorBar':section==='recent'?'recentColorBar':'topColorBar';
-  document.getElementById(swatchId).style.background = hex;
-  document.getElementById(hexId).value = hex;
-  document.getElementById(barId).style.setProperty('--preview-color', hex);
-  document.getElementById(barId).style.boxShadow = '0 0 16px '+hex+'88';
-  setSetting(section, key, hex);
-}
-
-function syncColorFromHex(section, key, pickerId, swatchId, hex) {
-  if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) return;
-  document.getElementById(pickerId).value = hex;
-  document.getElementById(swatchId).style.background = hex;
-  const barId = section==='alert'?'alertColorBar':section==='recent'?'recentColorBar':'topColorBar';
-  document.getElementById(barId).style.setProperty('--preview-color', hex);
-  document.getElementById(barId).style.boxShadow = '0 0 16px '+hex+'88';
-  setSetting(section, key, hex);
-}
-
-function applyColor(pickerId, swatchId, hexId, barId, hex) {
-  document.getElementById(pickerId).value = hex;
-  document.getElementById(swatchId).style.background = hex;
-  document.getElementById(hexId).value = hex;
-  document.getElementById(barId).style.setProperty('--preview-color', hex);
-  document.getElementById(barId).style.boxShadow = '0 0 16px '+hex+'88';
-}
-
-// ── RANGE DISPLAY ──
-function updateRangeDisplay(inputId, valId, formatter) {
-  const el = document.getElementById(inputId);
-  const vl = document.getElementById(valId);
-  if (el && vl) vl.textContent = formatter(el.value);
-}
-
-// ── POSITION ──
-function setPosition(pos) {
-  setSetting('alert','position',pos);
-  setActivePos(pos);
-}
-function setActivePos(pos) {
-  document.querySelectorAll('.pos-btn[data-pos]').forEach(b => {
-    b.classList.toggle('active', b.dataset.pos === pos);
-  });
-}
-
-// ── GOAL PREVIEW ──
-function updateGoalPreview() {
-  const goal    = +document.getElementById('goalAmount').value || 5000;
-  const current = +document.getElementById('goalCurrent').value || 0;
-  const title   = document.getElementById('goalTitle').value || 'Stream Goal';
-  const pct     = Math.min(100, Math.round(current/goal*100));
-  document.getElementById('gpTitle').textContent   = title;
-  document.getElementById('gpPct').textContent     = pct+'%';
-  document.getElementById('gpBar').style.width     = pct+'%';
-  document.getElementById('gpCurrent').textContent = '₹'+current.toLocaleString('en-IN');
-  document.getElementById('gpGoal').textContent    = '₹'+goal.toLocaleString('en-IN');
-}
-
-// ── OBS LINKS ──
-function populateLinks() {
-  const base = location.origin;
-  const links = [
-    {label:'🔔 Alert Overlay',   url:base+'/overlay',        size:'1280×200'},
-    {label:'💸 Recent Donations', url:base+'/overlay/recent', size:'360×120'},
-    {label:'👑 Top Donation',     url:base+'/overlay/top',    size:'360×100'},
-    {label:'🎯 Donation Goal',    url:base+'/overlay/goal',   size:'1280×80'},
-    {label:'🏠 Donation Page',    url:base+'/donate',         size:'Share with viewers'},
-    {label:'⚙ Dashboard',        url:base+'/dashboard',      size:'Open in browser'},
-  ];
-  const grid = document.getElementById('linksGrid');
-  grid.innerHTML = links.map(l => `
-    <div class="link-card">
-      <div class="link-label">${l.label}</div>
-      <div class="link-url">${l.url}</div>
-      <div style="font-size:11px;color:var(--faint)">${l.size}</div>
-      <button class="link-copy" onclick="copyLink('${l.url}',this)">📋 Copy URL</button>
-    </div>`).join('');
-}
-
-function copyLink(url, btn) {
-  navigator.clipboard.writeText(url).then(() => {
-    btn.textContent = '✓ Copied!';
-    setTimeout(() => btn.textContent = '📋 Copy URL', 2000);
-  });
-}
-
-// ── TABS ──
-function switchTab(name) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  document.querySelector('.tab[data-tab="'+name+'"]').classList.add('active');
-}
-
-// ── TOAST ──
-let toastTimer;
-function showToast(msg, type='success') {
+function showToast() {
   const t = document.getElementById('toast');
-  const m = document.getElementById('toastMsg');
-  t.className = 'toast ' + type;
-  m.textContent = msg;
   t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  setTimeout(() => t.classList.remove('show'), 1800);
 }
 
-// init
-updateGoalPreview();
+/* ── Test alert ── */
+async function sendTest() {
+  const name = document.getElementById('testName').value || 'Test Donor';
+  const amount = parseFloat(document.getElementById('testAmt').value) || 99;
+  const message = document.getElementById('testMsg').value || '';
+  try {
+    await fetch('/api/test-alert', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-dashboard-password': password },
+      body: JSON.stringify({ name, amount, message })
+    });
+    showToast();
+  } catch(e) { console.error(e); }
+}
+
+/* ── Reset goal ── */
+async function resetGoal() {
+  if (!confirm('Reset goal progress to ₹0?')) return;
+  await save('goal', 'currentTotal', 0);
+  await save('goal', 'start', 0);
+  document.getElementById('goalStart').value = 0;
+}
+
+/* ── OBS links ── */
+function buildObsLinks() {
+  const links = [
+    { label: 'Donation Alert',   url: BASE + '/overlay' },
+    { label: 'Recent Donations', url: BASE + '/overlay/recent' },
+    { label: 'Top Donation',     url: BASE + '/overlay/top' },
+    { label: 'Donation Goal',    url: BASE + '/overlay/goal' },
+    { label: 'Dashboard',        url: BASE + '/dashboard' },
+  ];
+  const wrap = document.getElementById('obsLinks');
+  wrap.innerHTML = '';
+  links.forEach(l => {
+    const row = document.createElement('div');
+    row.className = 'obs-link-row';
+    row.innerHTML = `
+      <span class="obs-link-label">${l.label}</span>
+      <span class="obs-link-url">${l.url}</span>
+      <button class="btn-copy" onclick="copyUrl(this,'${l.url}')">Copy</button>`;
+    wrap.appendChild(row);
+  });
+}
+
+function copyUrl(btn, url) {
+  navigator.clipboard.writeText(url).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+/* ── Poll client count ── */
+function startPolling() {
+  pollTimer = setInterval(async () => {
+    try {
+      const r = await fetch('/');
+      const d = await r.json();
+      const n = d.clients || 0;
+      document.getElementById('clientsBadge').textContent = n + ' overlay' + (n !== 1 ? 's' : '') + ' connected';
+      document.getElementById('statusDot').classList.toggle('off', n === 0);
+    } catch(e) {}
+  }, 3000);
+}
 </script>
 </body>
 </html>

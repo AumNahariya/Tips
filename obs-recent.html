@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<title>Recent Supporters</title>
+<title>Recent Donations</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -135,11 +135,11 @@
 <body>
 <div id="recentPanel">
   <div class="panel-header">
-    <div class="panel-title">RECENT <span>SUPPORTERS</span></div>
+    <div class="panel-title">RECENT <span>DONATIONS</span></div>
     <div class="panel-line"></div>
   </div>
   <div id="sliderWindow">
-    <div class="empty-state"></div>
+    <div class="empty-state">Waiting for donations...</div>
   </div>
   <div id="dots"></div>
 </div>
@@ -164,6 +164,11 @@ function connect() {
     try {
       const d = JSON.parse(e.data);
       if (d.type === 'donation') addDonation(d);
+      if (d.type === 'settings_update' && d.section === 'recent') {
+        if (d.key === 'maxItems') MAX_ITEMS = parseInt(d.value);
+        if (d.key === 'slideMs')  { SLIDE_MS = parseInt(d.value); resetTimer(); }
+        if (d.key === 'accentColor') document.documentElement.style.setProperty('--accent', d.value);
+      }
     } catch(err) {}
   };
   ws.onclose = () => { console.log('[recent] reconnecting...'); setTimeout(connect, 3000); };
