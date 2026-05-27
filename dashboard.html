@@ -288,11 +288,11 @@ input[type=range]{flex:1;accent-color:var(--red);cursor:pointer;}
         <div class="card-head"><div class="card-title">DONATION GOAL <span class="badge bb">obs-goal</span></div></div>
         <div class="card-body">
           <div class="frow">
-            <div class="field"><label>Goal amount (₹)</label><input type="number" id="gAmt" placeholder="5000" onchange="sv('goal','amount',+this.value)"/></div>
-            <div class="field"><label>Goal title</label><input type="text" id="gTitle" placeholder="Stream Goal" oninput="sv('goal','title',this.value)"/></div>
+            <div class="field"><label>Goal amount (₹)</label><input type="number" id="gAmt" placeholder="5000" onblur="sv('goal','amount',+this.value)" onkeydown="if(event.key==='Enter'){sv('goal','amount',+this.value);this.blur()}"/></div>
+            <div class="field"><label>Goal title</label><input type="text" id="gTitle" placeholder="Stream Goal" onblur="sv('goal','title',this.value)" onkeydown="if(event.key==='Enter'){sv('goal','title',this.value);this.blur()}"/></div>
           </div>
           <div class="frow">
-            <div class="field"><label>Starting amount raised (₹)</label><input type="number" id="gStart" placeholder="0" onchange="sv('goal','start',+this.value)"/></div>
+            <div class="field"><label>Starting amount raised (₹)</label><input type="number" id="gStart" placeholder="0" onblur="sv('goal','start',+this.value)" onkeydown="if(event.key==='Enter'){sv('goal','start',+this.value);this.blur()}"/></div>
             <div class="field"><label>Bar color</label><div class="chips" id="gColorChips"></div></div>
           </div>
           <div class="divider"></div>

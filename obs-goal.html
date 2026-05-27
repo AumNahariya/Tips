@@ -114,10 +114,10 @@
 
 <script>
 const params  = new URLSearchParams(location.search);
-const GOAL    = parseFloat(params.get('goal'))  || 5000;
-const TITLE   = params.get('title')             || 'Goal';
-const COLOR   = params.get('color')             || 'red';
-const START   = parseFloat(params.get('start')) || 0;
+let GOAL    = parseFloat(params.get('goal'))  || 5000;
+let TITLE   = params.get('title')             || 'Goal';
+let COLOR   = params.get('color')             || 'red';
+let START   = parseFloat(params.get('start')) || 0;
 
 const COLORS = {
   red:    'linear-gradient(90deg,#FF2D2D,#FF6B6B)',
@@ -165,7 +165,11 @@ function applyAllSettings(s) {
   if (s.barHeight !== undefined)   { const b = document.getElementById('bar'); if(b && b.parentElement) b.parentElement.style.height = s.barHeight + 'px'; }
   if (s.color)   { const b = document.getElementById('bar'); if(b) b.style.background = COLORS[s.color] || COLORS.red; }
   if (s.title)   { const t = document.getElementById('titleTxt'); if(t) t.textContent = s.title; }
-  if (s.amount)  { GOAL = parseFloat(s.amount); const t = document.getElementById('tgtAmt'); if(t) t.textContent = fmt(GOAL); }
+  if (s.amount !== undefined) {
+    GOAL = parseFloat(s.amount);
+    const t = document.getElementById('tgtAmt');
+    if (t) t.textContent = fmt(GOAL);
+  }
   if (s.currentTotal !== undefined) { total = parseFloat(s.currentTotal); updateUI(false); }
   else if (s.start !== undefined)   { total = parseFloat(s.start); updateUI(false); }
 }
@@ -184,10 +188,18 @@ function connect() {
       const d = JSON.parse(e.data);
       if (d.type === 'donation') { total = Math.min(total + parseFloat(d.amount), GOAL); updateUI(true); }
       if (d.type === 'settings_update' && d.section === 'goal') {
-        if (d.key === 'amount') { GOAL = parseFloat(d.value); document.getElementById('tgtAmt').textContent = fmt(GOAL); updateUI(false); }
-        if (d.key === 'title')  document.getElementById('titleTxt').textContent = d.value;
-        if (d.key === 'currentTotal') { total = parseFloat(d.value); updateUI(false); }
-        if (d.key === 'start')  { total = parseFloat(d.value); updateUI(false); }
+        if (d.key === 'amount') {
+          GOAL = parseFloat(d.value);
+          const tgt = document.getElementById('tgtAmt');
+          if (tgt) tgt.textContent = fmt(GOAL);
+          updateUI(false);
+        }
+        if (d.key === 'title') {
+          const t = document.getElementById('titleTxt');
+          if (t) t.textContent = d.value;
+        }
+        if (d.key === 'currentTotal') { total = parseFloat(d.value) || 0; updateUI(false); }
+        if (d.key === 'start') { total = parseFloat(d.value) || 0; updateUI(false); }
         if (d.key === 'color')  { document.getElementById('bar').style.background = COLORS[d.value] || COLORS.red; }
         if (d.key === 'scale')    document.getElementById('wrap').style.transform = 'scale(' + d.value + ')';
         if (d.key === 'opacity')  document.getElementById('pill').style.opacity = d.value;
