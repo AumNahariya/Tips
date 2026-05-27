@@ -226,24 +226,24 @@ input[type=range]{flex:1;accent-color:var(--red);cursor:pointer;}
         <div class="card-head"><div class="card-title">RECENT DONATIONS <span class="badge bbl">obs-recent</span></div></div>
         <div class="card-body">
           <div class="frow">
-            <div class="field">
-              <div class="trow"><span class="tlabel">Visible on stream</span><div class="tog on" id="recVisTog" onclick="tog(this,'recent','visible')"></div></div>
-            </div>
-            <div class="field">
-              <label>Max donations shown</label>
-              <div class="rrow"><input type="range" min="1" max="5" step="1" id="recMax" oninput="rv(this,'recMaxV');sv('recent','maxItems',+this.value)"/><span class="rval" id="recMaxV">5</span></div>
-            </div>
+            <div class="field"><div class="trow"><span class="tlabel">Visible on stream</span><div class="tog on" id="recVisTog" onclick="tog(this,'recent','visible')"></div></div></div>
+            <div class="field"><label>Accent color</label><div class="chips" id="rColorChips"></div></div>
+          </div>
+          <div class="divider"></div>
+          <div class="frow">
+            <div class="field"><label>Max donations shown</label><div class="rrow"><input type="range" min="1" max="5" step="1" id="recMax" oninput="rv(this,'recMaxV');sv('recent','maxItems',+this.value)"/><span class="rval" id="recMaxV">5</span></div></div>
+            <div class="field"><label>Slide speed (seconds)</label><div class="rrow"><input type="range" min="1.5" max="8" step="0.5" id="recSpd" oninput="rv(this,'recSpdV',true);sv('recent','slideMs',+this.value*1000)"/><span class="rval" id="recSpdV">3.5s</span></div></div>
+          </div>
+          <div class="divider"></div>
+          <div class="frow">
+            <div class="field"><label>Scale (size)</label><div class="rrow"><input type="range" min="0.5" max="2" step="0.05" id="recScale" oninput="rv2(this,'recScaleV','x');sv('recent','scale',+this.value)"/><span class="rval" id="recScaleV">1x</span></div></div>
+            <div class="field"><label>Opacity (transparency)</label><div class="rrow"><input type="range" min="0.1" max="1" step="0.05" id="recOpacity" oninput="rv2(this,'recOpacityV','');sv('recent','opacity',+this.value)"/><span class="rval" id="recOpacityV">1</span></div></div>
           </div>
           <div class="frow">
-            <div class="field">
-              <label>Slide speed (seconds)</label>
-              <div class="rrow"><input type="range" min="1.5" max="8" step="0.5" id="recSpd" oninput="rv(this,'recSpdV',true);sv('recent','slideMs',+this.value*1000)"/><span class="rval" id="recSpdV">3.5s</span></div>
-            </div>
-            <div class="field">
-              <label>Accent color</label>
-              <div class="chips" id="rColorChips"></div>
-            </div>
+            <div class="field"><label>Font size</label><div class="rrow"><input type="range" min="9" max="20" step="1" id="recFont" oninput="rv2(this,'recFontV','px');sv('recent','fontSize',+this.value)"/><span class="rval" id="recFontV">13px</span></div></div>
+            <div class="field"><label>Background opacity</label><div class="rrow"><input type="range" min="0" max="1" step="0.05" id="recBg" oninput="rv2(this,'recBgV','');sv('recent','bgOpacity',+this.value)"/><span class="rval" id="recBgV">0.85</span></div></div>
           </div>
+          <div class="field"><label>Corner radius</label><div class="rrow"><input type="range" min="0" max="20" step="1" id="recRadius" oninput="rv2(this,'recRadiusV','px');sv('recent','borderRadius',+this.value)"/><span class="rval" id="recRadiusV">10px</span></div></div>
         </div>
       </div>
     </div>
@@ -254,18 +254,20 @@ input[type=range]{flex:1;accent-color:var(--red);cursor:pointer;}
         <div class="card-head"><div class="card-title">TOP DONATION <span class="badge bg">obs-topdono</span></div></div>
         <div class="card-body">
           <div class="frow">
-            <div class="field">
-              <div class="trow"><span class="tlabel">Visible on stream</span><div class="tog on" id="topVisTog" onclick="tog(this,'topdono','visible')"></div></div>
-            </div>
-            <div class="field">
-              <label>Accent color</label>
-              <div class="chips" id="tColorChips"></div>
-            </div>
+            <div class="field"><div class="trow"><span class="tlabel">Visible on stream</span><div class="tog on" id="topVisTog" onclick="tog(this,'topdono','visible')"></div></div></div>
+            <div class="field"><label>Accent color</label><div class="chips" id="tColorChips"></div></div>
           </div>
-          <div class="field">
-            <label>Panel title (right side text)</label>
-            <input type="text" id="topTitle" placeholder="DONATION" oninput="sv('topdono','title',this.value)"/>
+          <div class="field"><label>Panel title text</label><input type="text" id="topTitle" placeholder="DONATION" oninput="sv('topdono','title',this.value)"/></div>
+          <div class="divider"></div>
+          <div class="frow">
+            <div class="field"><label>Scale (size)</label><div class="rrow"><input type="range" min="0.5" max="2" step="0.05" id="topScale" oninput="rv2(this,'topScaleV','x');sv('topdono','scale',+this.value)"/><span class="rval" id="topScaleV">1x</span></div></div>
+            <div class="field"><label>Opacity (transparency)</label><div class="rrow"><input type="range" min="0.1" max="1" step="0.05" id="topOpacity" oninput="rv2(this,'topOpacityV','');sv('topdono','opacity',+this.value)"/><span class="rval" id="topOpacityV">1</span></div></div>
           </div>
+          <div class="frow">
+            <div class="field"><label>Font size</label><div class="rrow"><input type="range" min="10" max="28" step="1" id="topFont" oninput="rv2(this,'topFontV','px');sv('topdono','fontSize',+this.value)"/><span class="rval" id="topFontV">18px</span></div></div>
+            <div class="field"><label>Background opacity</label><div class="rrow"><input type="range" min="0" max="1" step="0.05" id="topBg" oninput="rv2(this,'topBgV','');sv('topdono','bgOpacity',+this.value)"/><span class="rval" id="topBgV">0.88</span></div></div>
+          </div>
+          <div class="field"><label>Corner radius</label><div class="rrow"><input type="range" min="0" max="20" step="1" id="topRadius" oninput="rv2(this,'topRadiusV','px');sv('topdono','borderRadius',+this.value)"/><span class="rval" id="topRadiusV">12px</span></div></div>
         </div>
       </div>
     </div>
@@ -280,13 +282,23 @@ input[type=range]{flex:1;accent-color:var(--red);cursor:pointer;}
             <div class="field"><label>Goal title</label><input type="text" id="gTitle" placeholder="Stream Goal" oninput="sv('goal','title',this.value)"/></div>
           </div>
           <div class="frow">
-            <div class="field"><label>Starting amount already raised (₹)</label><input type="number" id="gStart" placeholder="0" onchange="sv('goal','start',+this.value)"/></div>
-            <div class="field">
-              <label>Bar color</label>
-              <div class="chips" id="gColorChips"></div>
-            </div>
+            <div class="field"><label>Starting amount raised (₹)</label><input type="number" id="gStart" placeholder="0" onchange="sv('goal','start',+this.value)"/></div>
+            <div class="field"><label>Bar color</label><div class="chips" id="gColorChips"></div></div>
           </div>
-          <div class="trow">
+          <div class="divider"></div>
+          <div class="frow">
+            <div class="field"><label>Scale (size)</label><div class="rrow"><input type="range" min="0.5" max="2" step="0.05" id="gScale" oninput="rv2(this,'gScaleV','x');sv('goal','scale',+this.value)"/><span class="rval" id="gScaleV">1x</span></div></div>
+            <div class="field"><label>Opacity (transparency)</label><div class="rrow"><input type="range" min="0.1" max="1" step="0.05" id="gOpacity" oninput="rv2(this,'gOpacityV','');sv('goal','opacity',+this.value)"/><span class="rval" id="gOpacityV">1</span></div></div>
+          </div>
+          <div class="frow">
+            <div class="field"><label>Font size</label><div class="rrow"><input type="range" min="10" max="32" step="1" id="gFont" oninput="rv2(this,'gFontV','px');sv('goal','fontSize',+this.value)"/><span class="rval" id="gFontV">21px</span></div></div>
+            <div class="field"><label>Background opacity</label><div class="rrow"><input type="range" min="0" max="1" step="0.05" id="gBg" oninput="rv2(this,'gBgV','');sv('goal','bgOpacity',+this.value)"/><span class="rval" id="gBgV">0.78</span></div></div>
+          </div>
+          <div class="frow">
+            <div class="field"><label>Corner radius (0=square, 99=pill)</label><div class="rrow"><input type="range" min="0" max="99" step="1" id="gRadius" oninput="rv2(this,'gRadiusV','px');sv('goal','borderRadius',+this.value)"/><span class="rval" id="gRadiusV">99px</span></div></div>
+            <div class="field"><label>Bar height</label><div class="rrow"><input type="range" min="2" max="12" step="1" id="gBarH" oninput="rv2(this,'gBarHV','px');sv('goal','barHeight',+this.value)"/><span class="rval" id="gBarHV">5px</span></div></div>
+          </div>
+          <div class="trow" style="margin-top:4px;">
             <span style="font-size:12px;color:var(--muted)">Reset goal to ₹0 for new stream</span>
             <button class="btn btn-ghost" onclick="resetGoal()" style="font-size:12px;padding:6px 12px;">Reset progress</button>
           </div>
@@ -401,17 +413,33 @@ function applyToUI() {
   setRange('recMax', re.maxItems||5, 'recMaxV', v=>v);
   setRange('recSpd', (re.slideMs||3500)/1000, 'recSpdV', v=>v+'s');
   buildChips('rColorChips','recent','accentColor', re.accentColor||'#FF2D2D', false);
+  setRange('recScale',   re.scale||1,      'recScaleV',   v=>v+'x');
+  setRange('recOpacity', re.opacity||1,    'recOpacityV', v=>v);
+  setRange('recFont',    re.fontSize||13,  'recFontV',    v=>v+'px');
+  setRange('recBg',      re.bgOpacity||0.85,'recBgV',     v=>v);
+  setRange('recRadius',  re.borderRadius||10,'recRadiusV',v=>v+'px');
 
   // Top dono
   setTog('topVisTog', td.visible!==false);
   buildChips('tColorChips','topdono','accentColor', td.accentColor||'#FFD700', false);
   document.getElementById('topTitle').value = td.title||'DONATION';
+  setRange('topScale',   td.scale||1,      'topScaleV',   v=>v+'x');
+  setRange('topOpacity', td.opacity||1,    'topOpacityV', v=>v);
+  setRange('topFont',    td.fontSize||18,  'topFontV',    v=>v+'px');
+  setRange('topBg',      td.bgOpacity||0.88,'topBgV',     v=>v);
+  setRange('topRadius',  td.borderRadius||12,'topRadiusV',v=>v+'px');
 
   // Goal
   document.getElementById('gAmt').value   = g.amount||5000;
   document.getElementById('gTitle').value = g.title||'Stream Goal';
   document.getElementById('gStart').value = g.start||0;
   buildChips('gColorChips','goal','color', g.color||'red', true);
+  setRange('gScale',   g.scale||1,       'gScaleV',   v=>v+'x');
+  setRange('gOpacity', g.opacity||1,     'gOpacityV', v=>v);
+  setRange('gFont',    g.fontSize||21,   'gFontV',    v=>v+'px');
+  setRange('gBg',      g.bgOpacity||0.78,'gBgV',      v=>v);
+  setRange('gRadius',  g.borderRadius||99,'gRadiusV', v=>v+'px');
+  setRange('gBarH',    g.barHeight||5,   'gBarHV',    v=>v+'px');
 }
 
 function setRange(id, val, outId, fmt) {
@@ -460,6 +488,9 @@ function buildChips(containerId, section, key, current, nameMode) {
 }
 
 /* ── Helpers ── */
+function rv2(el, outId, suffix) {
+  document.getElementById(outId).textContent = parseFloat(el.value) + suffix;
+}
 function rv(el, outId, isTime) {
   const v = parseFloat(el.value);
   const id = el.id;
