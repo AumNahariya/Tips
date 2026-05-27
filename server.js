@@ -32,20 +32,16 @@ let overlaySettings = {
     accentColor: '#FF2D2D',
   },
   recent: {
-    maxItems: 5,
-    slideMs: 3500,
-    accentColor: '#FF2D2D',
+    maxItems: 5, slideMs: 3500, accentColor: '#FF2D2D',
+    visible: true, scale: 1, opacity: 1, fontSize: 13, bgOpacity: 0.85, borderRadius: 10,
   },
   topdono: {
-    accentColor: '#FFD700',
-    visible: true,
+    accentColor: '#FFD700', visible: true, title: 'DONATION',
+    scale: 1, opacity: 1, fontSize: 18, bgOpacity: 0.88, borderRadius: 12,
   },
   goal: {
-    amount: 5000,
-    title: 'Stream Goal',
-    color: 'red',
-    start: 0,
-    currentTotal: 0,
+    amount: 5000, title: 'Stream Goal', color: 'red', start: 0, currentTotal: 0,
+    scale: 1, opacity: 1, fontSize: 21, bgOpacity: 0.78, borderRadius: 99, barHeight: 5,
   }
 };
 
@@ -114,6 +110,11 @@ app.get('/dashboard', (req, res) => {
   const f = path.join(__dirname, 'dashboard.html');
   if (fs.existsSync(f)) return res.sendFile(f);
   res.status(404).send('dashboard.html not found');
+});
+
+// Public settings endpoint — overlays fetch this on load (no password needed)
+app.get('/api/settings/public', (req, res) => {
+  res.json(overlaySettings);
 });
 
 // Get current settings
