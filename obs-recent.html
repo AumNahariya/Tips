@@ -147,8 +147,8 @@
 <script>
 const proto      = location.protocol === 'https:' ? 'wss:' : 'ws:';
 const SERVER_URL = proto + '//' + location.host + '/ws';
-const MAX_ITEMS  = 5;       // keep last 5 donations
-const SLIDE_MS   = 3500;    // how long each card is shown (ms)
+let MAX_ITEMS  = 5;       // keep last 5 donations
+let SLIDE_MS   = 3500;    // how long each card is shown (ms)
 
 let donations    = [];      // newest first
 let currentIdx   = 0;       // which card is active
@@ -156,6 +156,36 @@ let slideTimer   = null;
 let isAnimating  = false;
 
 /* ── WebSocket ── */
+// Load settings from server on page start and apply immediately
+async function fetchAndApplySettings() {
+  try {
+    const r = await fetch('/api/settings/public');
+    const s = await r.json();
+    if (s && s.recent) applyAllSettings(s.recent);
+  } catch(e) { console.warn('[recent] settings fetch failed'); }
+}
+
+function applyAllSettings(s) {
+  const panel = document.getElementById('recentPanel');
+  if (!panel) return;
+  if (s.visible === false)  panel.style.display = 'none';
+  if (s.scale !== undefined) panel.style.transform = 'scale(' + s.scale + ')';
+  if (s.opacity !== undefined) panel.style.opacity = s.opacity;
+  if (s.bgOpacity !== undefined) document.querySelectorAll('.d-card').forEach(c => c.style.background = 'rgba(8,8,16,' + s.bgOpacity + ')');
+  if (s.borderRadius !== undefined) { document.querySelectorAll('.d-card').forEach(c => c.style.borderRadius = s.borderRadius + 'px'); const sw = document.getElementById('sliderWindow'); if(sw) sw.style.borderRadius = s.borderRadius + 'px'; }
+  if (s.fontSize !== undefined) { document.querySelectorAll('.d-name').forEach(e => e.style.fontSize = s.fontSize + 'px'); document.querySelectorAll('.d-amount').forEach(e => e.style.fontSize = (parseInt(s.fontSize)+4) + 'px'); }
+  if (s.accentColor) document.querySelectorAll('.d-card').forEach(c => c.style.borderLeftColor = s.accentColor);
+  if (s.maxItems) MAX_ITEMS = parseInt(s.maxItems);
+  if (s.slideMs)  SLIDE_MS  = parseInt(s.slideMs);
+  // Restore saved donations from last stream
+  if (s.donations && s.donations.length > 0) {
+    donations = s.donations.slice(0, MAX_ITEMS);
+    rebuildAndGoTo(0);
+  }
+}
+
+fetchAndApplySettings();
+
 function connect() {
   console.log('[recent] connecting to', SERVER_URL);
   const ws = new WebSocket(SERVER_URL);
@@ -165,9 +195,32 @@ function connect() {
       const d = JSON.parse(e.data);
       if (d.type === 'donation') addDonation(d);
       if (d.type === 'settings_update' && d.section === 'recent') {
-        if (d.key === 'maxItems') MAX_ITEMS = parseInt(d.value);
-        if (d.key === 'slideMs')  { SLIDE_MS = parseInt(d.value); resetTimer(); }
-        if (d.key === 'accentColor') document.documentElement.style.setProperty('--accent', d.value);
+        if (d.key === 'maxItems') {
+          MAX_ITEMS = parseInt(d.value);
+          donations = donations.slice(0, MAX_ITEMS);
+          if (donations.length > 0) rebuildAndGoTo(0);
+        }
+        if (d.key === 'slideMs') { SLIDE_MS = parseInt(d.value); resetTimer(); }
+        if (d.key === 'accentColor') {
+          document.querySelectorAll('.d-card').forEach(c => c.style.borderLeftColor = d.value);
+          document.querySelectorAll('.d-avatar').forEach(a => a.style.background = 'linear-gradient(135deg,' + d.value + ',#ff6b6b)');
+          document.querySelectorAll('.dot.active').forEach(dot => dot.style.background = d.value);
+          document.querySelector('.panel-title span').style.color = d.value;
+        }
+        if (d.key === 'visible')  document.getElementById('recentPanel').style.display = d.value ? 'block' : 'none';
+        if (d.key === 'scale')    document.getElementById('recentPanel').style.transform = 'scale(' + d.value + ')';
+        if (d.key === 'opacity')  document.getElementById('recentPanel').style.opacity = d.value;
+        if (d.key === 'fontSize') {
+          document.querySelectorAll('.d-name').forEach(e => e.style.fontSize = d.value + 'px');
+          document.querySelectorAll('.d-amount').forEach(e => e.style.fontSize = (parseInt(d.value)+4) + 'px');
+        }
+        if (d.key === 'bgOpacity') {
+          document.querySelectorAll('.d-card').forEach(c => c.style.background = 'rgba(8,8,16,' + d.value + ')');
+        }
+        if (d.key === 'borderRadius') {
+          document.querySelectorAll('.d-card').forEach(c => c.style.borderRadius = d.value + 'px');
+          document.getElementById('sliderWindow').style.borderRadius = d.value + 'px';
+        }
       }
     } catch(err) {}
   };
