@@ -143,6 +143,38 @@ const SERVER_URL = proto + '//' + location.host + '/ws';
 let topDonor = null;
 let wsReady  = false;
 
+async function fetchAndApplySettings() {
+  try {
+    const r = await fetch('/api/settings/public');
+    const s = await r.json();
+    if (s && s.topdono) applyAllSettings(s.topdono);
+  } catch(e) { console.warn('[topdono] settings fetch failed'); }
+}
+
+function applyAllSettings(s) {
+  const panel = document.getElementById('topPanel');
+  if (!panel) return;
+  if (s.visible === false)   panel.style.display = 'none';
+  if (s.scale !== undefined)   panel.style.transform = 'scale(' + s.scale + ')';
+  if (s.opacity !== undefined) panel.style.opacity = s.opacity;
+  if (s.bgOpacity !== undefined) { const c = document.getElementById('topCard'); if(c) c.style.background = 'rgba(8,8,16,' + s.bgOpacity + ')'; }
+  if (s.borderRadius !== undefined) { const c = document.getElementById('topCard'); if(c) c.style.borderRadius = s.borderRadius + 'px'; }
+  if (s.fontSize !== undefined) { document.querySelectorAll('.top-name').forEach(e => e.style.fontSize = s.fontSize + 'px'); document.querySelectorAll('.top-amount').forEach(e => e.style.fontSize = (parseInt(s.fontSize)+6) + 'px'); }
+  if (s.accentColor) { document.querySelectorAll('.top-avatar').forEach(a => a.style.background = 'linear-gradient(135deg,' + s.accentColor + ',#FF8C00)'); document.querySelectorAll('.top-amount').forEach(a => a.style.color = s.accentColor); }
+  if (s.title) { const sp = document.querySelector('.panel-title span'); if(sp) sp.textContent = s.title; }
+  // Restore saved top donor from last stream
+  if (s.topDonor) {
+    topDonor = s.topDonor;
+    setTimeout(() => renderTop(false), 200);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', fetchAndApplySettings);
+} else {
+  fetchAndApplySettings();
+}
+
 function connect() {
   console.log('[topdono] connecting to', SERVER_URL);
   const ws = new WebSocket(SERVER_URL);
@@ -159,7 +191,41 @@ function connect() {
       if (d.type === 'donation') checkTopDonor(d);
       if (d.type === 'settings_update' && d.section === 'topdono') {
         if (d.key === 'visible') document.getElementById('topPanel').style.display = d.value ? 'block' : 'none';
-        if (d.key === 'accentColor') document.documentElement.style.setProperty('--accent', d.value);
+        if (d.key === 'topDonor') {
+          if (!d.value) {
+            topDonor = null;
+            const card = document.getElementById('topCard');
+            if (card) { card.classList.remove('visible','new-record'); card.innerHTML = '<div class="empty-state">Waiting for donations...</div>'; }
+          } else {
+            topDonor = d.value;
+            renderTop(false);
+          }
+        }
+        if (d.key === 'accentColor') {
+          const card = document.getElementById('topCard');
+          if (card) card.style.borderColor = d.value + '55';
+          document.querySelectorAll('.top-avatar').forEach(a => a.style.background = 'linear-gradient(135deg,' + d.value + ',#FF8C00)');
+          document.querySelectorAll('.top-amount').forEach(a => a.style.color = d.value);
+          document.querySelector('.panel-title span') && (document.querySelector('.panel-title span').style.color = d.value);
+        }
+        if (d.key === 'title') {
+          const sp = document.querySelector('.panel-title span');
+          if (sp) sp.textContent = d.value;
+        }
+        if (d.key === 'scale')    document.getElementById('topPanel').style.transform = 'scale(' + d.value + ')';
+        if (d.key === 'opacity')  document.getElementById('topPanel').style.opacity = d.value;
+        if (d.key === 'fontSize') {
+          document.querySelectorAll('.top-name').forEach(e => e.style.fontSize = d.value + 'px');
+          document.querySelectorAll('.top-amount').forEach(e => e.style.fontSize = (parseInt(d.value)+6) + 'px');
+        }
+        if (d.key === 'bgOpacity') {
+          const c = document.getElementById('topCard');
+          if (c) c.style.background = 'rgba(8,8,16,' + d.value + ')';
+        }
+        if (d.key === 'borderRadius') {
+          const c = document.getElementById('topCard');
+          if (c) c.style.borderRadius = d.value + 'px';
+        }
       }
     } catch(err) { console.error('[topdono] parse error', err); }
   };

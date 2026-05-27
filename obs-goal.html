@@ -145,6 +145,37 @@ const SERVER_URL = proto + '//' + location.host + '/ws';
 let total = START;
 updateUI(false);
 
+async function fetchAndApplySettings() {
+  try {
+    const r = await fetch('/api/settings/public');
+    const s = await r.json();
+    if (s && s.goal) applyAllSettings(s.goal);
+  } catch(e) { console.warn('[goal] settings fetch failed'); }
+}
+
+function applyAllSettings(s) {
+  const wrap = document.getElementById('wrap');
+  const pill = document.getElementById('pill');
+  if (!wrap || !pill) return;
+  if (s.scale !== undefined)       wrap.style.transform = 'scale(' + s.scale + ')';
+  if (s.opacity !== undefined)     pill.style.opacity = s.opacity;
+  if (s.bgOpacity !== undefined)   pill.style.background = 'rgba(8,8,16,' + s.bgOpacity + ')';
+  if (s.borderRadius !== undefined) pill.style.borderRadius = s.borderRadius + 'px';
+  if (s.fontSize !== undefined)    { const c = document.getElementById('curAmt'); const t = document.getElementById('tgtAmt'); if(c) c.style.fontSize = s.fontSize + 'px'; if(t) t.style.fontSize = (parseInt(s.fontSize)-4) + 'px'; }
+  if (s.barHeight !== undefined)   { const b = document.getElementById('bar'); if(b && b.parentElement) b.parentElement.style.height = s.barHeight + 'px'; }
+  if (s.color)   { const b = document.getElementById('bar'); if(b) b.style.background = COLORS[s.color] || COLORS.red; }
+  if (s.title)   { const t = document.getElementById('titleTxt'); if(t) t.textContent = s.title; }
+  if (s.amount)  { GOAL = parseFloat(s.amount); const t = document.getElementById('tgtAmt'); if(t) t.textContent = fmt(GOAL); }
+  if (s.currentTotal !== undefined) { total = parseFloat(s.currentTotal); updateUI(false); }
+  else if (s.start !== undefined)   { total = parseFloat(s.start); updateUI(false); }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', fetchAndApplySettings);
+} else {
+  fetchAndApplySettings();
+}
+
 function connect() {
   const ws = new WebSocket(SERVER_URL);
   ws.onopen    = () => console.log('[goal] connected');
@@ -158,6 +189,15 @@ function connect() {
         if (d.key === 'currentTotal') { total = parseFloat(d.value); updateUI(false); }
         if (d.key === 'start')  { total = parseFloat(d.value); updateUI(false); }
         if (d.key === 'color')  { document.getElementById('bar').style.background = COLORS[d.value] || COLORS.red; }
+        if (d.key === 'scale')    document.getElementById('wrap').style.transform = 'scale(' + d.value + ')';
+        if (d.key === 'opacity')  document.getElementById('pill').style.opacity = d.value;
+        if (d.key === 'bgOpacity') document.getElementById('pill').style.background = 'rgba(8,8,16,' + d.value + ')';
+        if (d.key === 'fontSize') {
+          document.getElementById('curAmt').style.fontSize = d.value + 'px';
+          document.getElementById('tgtAmt').style.fontSize = (parseInt(d.value)-4) + 'px';
+        }
+        if (d.key === 'borderRadius') document.getElementById('pill').style.borderRadius = d.value + 'px';
+        if (d.key === 'barHeight') document.getElementById('bar').parentElement.style.height = d.value + 'px';
       }
     } catch(e) {}
   };

@@ -180,11 +180,17 @@ function applyAllSettings(s) {
   // Restore saved donations from last stream
   if (s.donations && s.donations.length > 0) {
     donations = s.donations.slice(0, MAX_ITEMS);
-    rebuildAndGoTo(0);
+    // Small delay to ensure DOM is ready
+    setTimeout(() => rebuildAndGoTo(0), 200);
   }
 }
 
-fetchAndApplySettings();
+// Run after DOM is fully loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', fetchAndApplySettings);
+} else {
+  fetchAndApplySettings();
+}
 
 function connect() {
   console.log('[recent] connecting to', SERVER_URL);
@@ -208,6 +214,18 @@ function connect() {
           document.querySelector('.panel-title span').style.color = d.value;
         }
         if (d.key === 'visible')  document.getElementById('recentPanel').style.display = d.value ? 'block' : 'none';
+        if (d.key === 'donations') {
+          if (!d.value || d.value.length === 0) {
+            donations = [];
+            const win = document.getElementById('sliderWindow');
+            if (win) win.innerHTML = '<div class="empty-state">Waiting for donations...</div>';
+            const dotsEl = document.getElementById('dots');
+            if (dotsEl) dotsEl.innerHTML = '';
+          } else {
+            donations = d.value.slice(0, MAX_ITEMS);
+            rebuildAndGoTo(0);
+          }
+        }
         if (d.key === 'scale')    document.getElementById('recentPanel').style.transform = 'scale(' + d.value + ')';
         if (d.key === 'opacity')  document.getElementById('recentPanel').style.opacity = d.value;
         if (d.key === 'fontSize') {
