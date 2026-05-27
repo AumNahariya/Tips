@@ -21,6 +21,27 @@ const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || 'aumii062
 const DASHBOARD_PASSWORD      = process.env.DASHBOARD_PASSWORD   || 'aumii123';
 // ─────────────────────────────────────────────────────────────
 
+// ── Persistent storage — saves to data.json so data survives restarts ──
+const DATA_FILE = path.join(__dirname, 'data.json');
+
+function loadData() {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+      const saved = JSON.parse(raw);
+      console.log('[data] Loaded from data.json');
+      return saved;
+    }
+  } catch(e) { console.warn('[data] Could not load data.json:', e.message); }
+  return null;
+}
+
+function saveData() {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(overlaySettings, null, 2), 'utf-8');
+  } catch(e) { console.warn('[data] Could not save data.json:', e.message); }
+}
+
 // ── In-memory settings store (persists while server runs) ──
 let overlaySettings = {
   alert: {
@@ -44,6 +65,16 @@ let overlaySettings = {
     scale: 1, opacity: 1, fontSize: 21, bgOpacity: 0.78, borderRadius: 99, barHeight: 5,
   }
 };
+
+// Merge saved data on top of defaults (preserves any new keys added in updates)
+const savedData = loadData();
+if (savedData) {
+  Object.keys(savedData).forEach(section => {
+    if (overlaySettings[section]) {
+      overlaySettings[section] = { ...overlaySettings[section], ...savedData[section] };
+    }
+  });
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -131,6 +162,7 @@ app.post('/api/settings', (req, res) => {
   const { section, key, value } = req.body;
   if (!overlaySettings[section]) return res.status(400).json({ error: 'Unknown section' });
   overlaySettings[section][key] = value;
+  saveData(); // persist immediately to data.json
   // Push update to all overlays in real time
   broadcast({ type: 'settings_update', section, key, value });
   console.log(`[settings] ${section}.${key} = ${JSON.stringify(value)}`);
@@ -259,11 +291,24 @@ app.post('/webhook', (req, res) => {
 
     console.log(`[webhook] payment.captured: ₹${amount} from ${name}`);
 
-    // Update goal total
+    // Update goal total and save
     overlaySettings.goal.currentTotal = Math.min(
       (overlaySettings.goal.currentTotal || 0) + amount,
       overlaySettings.goal.amount
     );
+
+    // Save top donor persistently
+    const curTop = overlaySettings.topdono.topDonor;
+    if (!curTop || amount > curTop.amount) {
+      overlaySettings.topdono.topDonor = { name, amount };
+    }
+
+    // Save recent donations list (last 5)
+    if (!overlaySettings.recent.donations) overlaySettings.recent.donations = [];
+    overlaySettings.recent.donations.unshift({ name, amount, message, timestamp: new Date().toISOString() });
+    overlaySettings.recent.donations = overlaySettings.recent.donations.slice(0, 5);
+
+    saveData(); // persist all donation data
 
     broadcast({
       type: 'donation',

@@ -244,6 +244,11 @@ input[type=range]{flex:1;accent-color:var(--red);cursor:pointer;}
             <div class="field"><label>Background opacity</label><div class="rrow"><input type="range" min="0" max="1" step="0.05" id="recBg" oninput="rv2(this,'recBgV','');sv('recent','bgOpacity',+this.value)"/><span class="rval" id="recBgV">0.85</span></div></div>
           </div>
           <div class="field"><label>Corner radius</label><div class="rrow"><input type="range" min="0" max="20" step="1" id="recRadius" oninput="rv2(this,'recRadiusV','px');sv('recent','borderRadius',+this.value)"/><span class="rval" id="recRadiusV">10px</span></div></div>
+          <div class="divider"></div>
+          <div class="trow">
+            <span style="font-size:12px;color:var(--muted)">Clear all saved donations (new stream)</span>
+            <button class="btn btn-ghost" onclick="resetRecent()" style="font-size:12px;padding:6px 12px;">Clear donations</button>
+          </div>
         </div>
       </div>
     </div>
@@ -268,6 +273,11 @@ input[type=range]{flex:1;accent-color:var(--red);cursor:pointer;}
             <div class="field"><label>Background opacity</label><div class="rrow"><input type="range" min="0" max="1" step="0.05" id="topBg" oninput="rv2(this,'topBgV','');sv('topdono','bgOpacity',+this.value)"/><span class="rval" id="topBgV">0.88</span></div></div>
           </div>
           <div class="field"><label>Corner radius</label><div class="rrow"><input type="range" min="0" max="20" step="1" id="topRadius" oninput="rv2(this,'topRadiusV','px');sv('topdono','borderRadius',+this.value)"/><span class="rval" id="topRadiusV">12px</span></div></div>
+          <div class="divider"></div>
+          <div class="trow">
+            <span style="font-size:12px;color:var(--muted)">Clear saved top donor (new stream)</span>
+            <button class="btn btn-ghost" onclick="resetTopDonor()" style="font-size:12px;padding:6px 12px;">Clear top donor</button>
+          </div>
         </div>
       </div>
     </div>
@@ -537,6 +547,18 @@ async function sendTest() {
     });
     showToast();
   } catch(e) { console.error(e); }
+}
+
+/* ── Reset recent donations ── */
+async function resetRecent() {
+  if (!confirm('Clear all saved donations? This cannot be undone.')) return;
+  await sv('recent', 'donations', []);
+}
+
+/* ── Reset top donor ── */
+async function resetTopDonor() {
+  if (!confirm('Clear saved top donor?')) return;
+  await sv('topdono', 'topDonor', null);
 }
 
 /* ── Reset goal ── */
